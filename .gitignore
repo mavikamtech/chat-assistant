@@ -1,0 +1,35 @@
+*.pdf
+# Ignore operating system files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.iml
+
+# Ignore Python files
+*.pyc
+__pycache__/
+
+# Ignore FastAPI files
+fastapi.log
+
+# Ignore S3 files
+.s3/
+
+# Ignore upload directory
+backend/uploads/
+
+# Ignore virtual environment files
+venv/
+env/
+
+# Ignore log files
+*.log
+
+# Ignore node_modules (if you're using Node.js)
+node_modules/
+
+uploads/*.pdf
+
