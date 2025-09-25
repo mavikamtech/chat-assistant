@@ -17,7 +17,7 @@ Start-Process -NoNewWindow powershell -ArgumentList "-Command", "cd '$PWD'; `$en
 Write-Host "Starting MCP-RAG..." -ForegroundColor Yellow
 Start-Process -NoNewWindow powershell -ArgumentList "-Command", "cd '$PWD'; `$env:PYTHONPATH='$PWD'; `$env:APP_ENV='local'; `$env:MOCK_AWS='true'; `$env:PORT='8081'; poetry run python services/mcp-rag/main.py"
 
-Write-Host "Starting MCP-Parser..." -ForegroundColor Yellow  
+Write-Host "Starting MCP-Parser..." -ForegroundColor Yellow
 Start-Process -NoNewWindow powershell -ArgumentList "-Command", "cd '$PWD'; `$env:PYTHONPATH='$PWD'; `$env:APP_ENV='local'; `$env:MOCK_AWS='true'; `$env:PORT='8082'; poetry run python services/mcp-parser/main.py"
 
 Write-Host "Starting MCP-FinDB..." -ForegroundColor Yellow
