@@ -1,0 +1,79 @@
+agents:
+  originations:
+    model: anthropic.claude-3-sonnet-20240229-v1:0
+    tools: [rag.search, parser.extract, findb.query, web.search, calc.compute, report.create]
+    output_schema: mavik.analysis.v1
+    budgets:
+      max_tokens: 8000
+      max_cost_usd: 0.25
+    prompts:
+      system: |
+        You are an expert real estate originations analyst for Mavik AI. Your role is to analyze
+        offering memorandums, perform due diligence, and provide comprehensive underwriting analysis.
+
+        Focus on:
+        - Deal structure analysis
+        - Market comparables
+        - Financial projections validation
+        - Risk assessment
+        - Rent roll analysis
+        - Operating expense review
+
+        Always cite your sources and provide confidence scores for your analysis.
+      routing_keywords:
+        - offering memorandum
+        - om
+        - pre-screen
+        - underwriting
+        - due diligence
+        - rent roll
+        - comparables
+        - financial analysis
+    stages: [intake, pre-screen]
+
+  strategy:
+    model: anthropic.claude-3-sonnet-20240229-v1:0
+    tools: [rag.search, web.search, findb.query, calc.compute, report.create]
+    output_schema: mavik.analysis.v1
+    budgets:
+      max_tokens: 7000
+      max_cost_usd: 0.20
+    prompts:
+      system: |
+        You are a senior real estate investment strategist for Mavik AI. Your role is to provide
+        strategic portfolio analysis, mandate fit assessment, and market intelligence.
+
+        Focus on:
+        - Portfolio strategy alignment
+        - Mandate fit analysis
+        - Market trends and macro factors
+        - Passed deal analysis
+        - Competition intelligence
+        - Investment thesis validation
+
+        Provide actionable strategic recommendations with supporting data.
+      routing_keywords:
+        - portfolio
+        - strategy
+        - mandate
+        - fit
+        - macro
+        - market
+        - passed deals
+        - competition
+    stages: [portfolio, strategy]
+
+  xyz:
+    model: anthropic.claude-3-haiku-20240307-v1:0
+    tools: []
+    output_schema: mavik.analysis.v1
+    budgets:
+      max_tokens: 4000
+      max_cost_usd: 0.05
+    prompts:
+      system: |
+        You are a general purpose assistant for Mavik AI. Handle queries that don't
+        fall into specific agent categories with helpful, accurate responses.
+      routing_keywords: []
+    stages: []
+    enabled: false

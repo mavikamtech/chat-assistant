@@ -1,0 +1,11 @@
+node_modules
+.next
+dist
+build
+coverage
+.vscode
+.git
+*.log
+*.tmp
+*.temp
+cdk.out

@@ -1,0 +1,206 @@
+[tool.poetry]
+name = "mavik-ai"
+version = "0.1.0"
+description = "Multi-Agent AI Underwriting & Strategy System"
+authors = ["Mavik Technologies <engineering@mavik.ai>"]
+readme = "README.md"
+packages = []
+
+[tool.poetry.dependencies]
+python = "^3.11,<4.0"
+
+# Core web framework
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+websockets = "^12.0"
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+
+# AWS services
+boto3 = "^1.34.0"
+botocore = "^1.34.0"
+
+# Database
+# asyncpg = "^0.29.0"  # Requires Visual C++ Build Tools on Windows
+psycopg = {extras = ["binary"], version = "^3.1.0"}
+redis = "^5.0.0"
+
+# Search and ML
+opensearch-py = "^2.4.0"
+
+# HTTP client
+httpx = "^0.25.0"
+aiohttp = "^3.9.0"
+
+# Utilities
+tenacity = "^8.2.0"
+python-json-logger = "^2.0.7"
+pyyaml = "^6.0.1"
+python-multipart = "^0.0.6"
+jinja2 = "^3.1.2"
+
+# Document processing
+python-docx = "^1.1.0"
+openpyxl = "^3.1.2"
+
+# Date/time
+python-dateutil = "^2.8.2"
+
+[tool.poetry.group.dev.dependencies]
+# Linting and formatting
+ruff = "^0.1.6"
+mypy = "^1.7.0"
+pre-commit = "^3.5.0"
+
+# Testing
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+
+# Security
+bandit = "^1.7.5"
+safety = "^2.3.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# Workspace configuration - Poetry will look for pyproject.toml files in these directories
+[tool.poetry.group.workspace]
+optional = true
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "N",    # pep8-naming
+    "D",    # pydocstyle
+    "UP",   # pyupgrade
+    "S",    # bandit
+    "T20",  # flake8-print
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+]
+ignore = [
+    "D100",  # Missing docstring in public module
+    "D101",  # Missing docstring in public class
+    "D102",  # Missing docstring in public method
+    "D103",  # Missing docstring in public function
+    "D104",  # Missing docstring in public package
+    "D105",  # Missing docstring in magic method
+    "S101",  # Use of assert
+]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "build",
+    "dist",
+    "node_modules",
+]
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101", "D", "T20"]
+"*/test_*" = ["S101", "D", "T20"]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.isort]
+known-first-party = ["mavik", "apps", "services", "packages"]
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_optional = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "boto3.*",
+    "botocore.*",
+    "opensearch_py.*",
+    "redis.*",
+    "asyncpg.*",
+    "psycopg.*",
+]
+ignore_missing_imports = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --cov=apps --cov=services --cov=packages --cov-report=term-missing --cov-report=html"
+testpaths = [
+    "apps",
+    "services",
+    "packages",
+    "tests",
+]
+python_files = [
+    "test_*.py",
+    "*_test.py",
+]
+python_classes = [
+    "Test*",
+]
+python_functions = [
+    "test_*",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "smoke: Smoke tests",
+    "slow: Slow tests",
+]
+asyncio_mode = "auto"
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["apps", "services", "packages"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/node_modules/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "*/test_*"]
+skips = ["B101"]  # Skip assert_used test

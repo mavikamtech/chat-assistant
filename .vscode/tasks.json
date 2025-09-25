@@ -1,0 +1,502 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install (Python)",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["install"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install (Web)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/web"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Orchestrator",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "apps/orchestrator/main.py"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true",
+          "LOG_LEVEL": "DEBUG",
+          "HOST": "0.0.0.0",
+          "PORT": "8080"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Starting.*$",
+          "endsPattern": "^.*started.*$"
+        }
+      }
+    },
+    {
+      "label": "MCP RAG",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "services/mcp-rag/main.py"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true",
+          "LOG_LEVEL": "DEBUG",
+          "HOST": "0.0.0.0",
+          "PORT": "8081"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Starting.*$",
+          "endsPattern": "^.*started.*$"
+        }
+      }
+    },
+    {
+      "label": "MCP Parser",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "services/mcp-parser/main.py"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true",
+          "LOG_LEVEL": "DEBUG",
+          "HOST": "0.0.0.0",
+          "PORT": "8082"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Starting.*$",
+          "endsPattern": "^.*started.*$"
+        }
+      }
+    },
+    {
+      "label": "MCP FinDB",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "services/mcp-findb/main.py"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true",
+          "LOG_LEVEL": "DEBUG",
+          "HOST": "0.0.0.0",
+          "PORT": "8083"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Starting.*$",
+          "endsPattern": "^.*started.*$"
+        }
+      }
+    },
+    {
+      "label": "MCP Web",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "services/mcp-web/main.py"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true",
+          "LOG_LEVEL": "DEBUG",
+          "HOST": "0.0.0.0",
+          "PORT": "8084"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Starting.*$",
+          "endsPattern": "^.*started.*$"
+        }
+      }
+    },
+    {
+      "label": "MCP Calc",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "services/mcp-calc/main.py"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true",
+          "LOG_LEVEL": "DEBUG",
+          "HOST": "0.0.0.0",
+          "PORT": "8085"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Starting.*$",
+          "endsPattern": "^.*started.*$"
+        }
+      }
+    },
+    {
+      "label": "Web",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/web",
+        "env": {
+          "NODE_ENV": "development",
+          "NEXT_PUBLIC_API_URL": "http://localhost:8080",
+          "NEXT_PUBLIC_WS_URL": "ws://localhost:8080"
+        }
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Starting.*$",
+          "endsPattern": "^.*started.*$"
+        }
+      }
+    },
+    {
+      "label": "Run All (Local Mock)",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Orchestrator",
+        "MCP RAG",
+        "MCP Parser",
+        "MCP FinDB",
+        "MCP Web",
+        "MCP Calc",
+        "Web"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Smoke: Orchestrator",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "apps/smoke/smoke_orchestrator_local.py"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Smoke: Tools",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "apps/smoke/smoke_tools_local.py"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Smoke: Report",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "python", "apps/smoke/smoke_report_local.py"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}",
+          "APP_ENV": "local",
+          "MOCK_AWS": "true"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Lint Python",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "ruff", "check", ".", "--fix"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [
+        {
+          "owner": "ruff",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.+?):(\\d+):(\\d+): (\\w+) (.+?) \\((.+?)\\)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5,
+            "code": 6
+          }
+        }
+      ]
+    },
+    {
+      "label": "Type Check Python",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "mypy", "."],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [
+        {
+          "owner": "mypy",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.+?):(\\d+): (\\w+): (.+?)$",
+            "file": 1,
+            "line": 2,
+            "severity": 3,
+            "message": 4
+          }
+        }
+      ]
+    },
+    {
+      "label": "Test Python",
+      "type": "shell",
+      "command": "poetry",
+      "args": ["run", "pytest", "-v", "--cov-report=term-missing"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [
+        {
+          "owner": "pytest",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.+?):(\\d+): (.+?)$",
+            "file": 1,
+            "line": 2,
+            "message": 3
+          }
+        }
+      ]
+    }
+  ]
+}
