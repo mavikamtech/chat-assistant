@@ -1,83 +1,134 @@
 mcp:
   servers:
     rag:
-      url: "wss://rag.svc.cluster.local:443"
+      name: "RAG Search Service"
+      url: ${MCP_RAG_URL}
+      url_local: ${MCP_RAG_URL_LOCAL}
       timeout_ms: 800
-      local_url: "ws://localhost:8081"
-      description: "RAG search with OpenSearch and Bedrock Knowledge Bases"
+      retry_attempts: 2
+      description: "Hybrid vector + BM25 search with OpenSearch Serverless and Bedrock Knowledge Bases"
+      capabilities:
+        - semantic_search
+        - filtered_search
+        - citation_retrieval
+        - confidence_scoring
       tools:
         - name: "rag.search"
-          description: "Semantic and hybrid search across ingested documents"
-          parameters:
-            query: "Search query string"
-            filters: "Optional filters (dealId, geo, asset, after)"
-            topK: "Number of results to return (default: 5)"
+          description: "Search documents using hybrid ANN + BM25 approach"
+          timeout_ms: 800
 
     parser:
-      url: "wss://parser.svc.cluster.local:443"
+      name: "Document Parser Service"  
+      url: ${MCP_PARSER_URL}
+      url_local: ${MCP_PARSER_URL_LOCAL}
       timeout_ms: 30000
-      local_url: "ws://localhost:8082"
-      description: "Document parsing with AWS Textract"
+      retry_attempts: 1
+      description: "Textract-based document processing with table extraction and confidence scoring"
+      capabilities:
+        - document_parsing
+        - table_extraction
+        - text_normalization
+        - confidence_scoring
       tools:
         - name: "parser.extract"
-          description: "Extract structured data from PDF/image documents"
-          parameters:
-            s3Uri: "S3 URI of document to parse"
-            dealId: "Deal ID for context and storage"
+          description: "Extract tables and text from offering memorandums"
+          timeout_ms: 30000
 
     findb:
-      url: "wss://findb.svc.cluster.local:443"
+      name: "Financial Database Service"
+      url: ${MCP_FINDB_URL}
+      url_local: ${MCP_FINDB_URL_LOCAL}
       timeout_ms: 200
-      local_url: "ws://localhost:8083"
-      description: "Financial database queries with ABAC filtering"
+      retry_attempts: 3
+      description: "Aurora PostgreSQL queries with RBAC and MNPI filtering"
+      capabilities:
+        - financial_metrics
+        - deal_queries
+        - tenant_data
+        - abac_filtering
       tools:
         - name: "findb.query"
-          description: "Query deal metrics and financial data"
-          parameters:
-            dealId: "Specific deal ID to query"
-            filters: "Optional filters for bulk queries"
+          description: "Query financial metrics and deal data with ABAC enforcement"
+          timeout_ms: 200
 
     web:
-      url: "wss://web.svc.cluster.local:443"
+      name: "Web Research Service"
+      url: ${MCP_WEB_URL}
+      url_local: ${MCP_WEB_URL_LOCAL}
       timeout_ms: 1500
-      local_url: "ws://localhost:8084"
-      description: "Web research with allowlisted domains"
+      retry_attempts: 2
+      description: "Allowlisted web scraper with DynamoDB caching and credibility scoring"
+      capabilities:
+        - web_scraping
+        - domain_allowlist
+        - content_caching
+        - credibility_scoring
       tools:
         - name: "web.search"
-          description: "Search allowlisted web sources with credibility scoring"
-          parameters:
-            queries: "Array of search query strings"
-            allowlistGroup: "Allowlist group for domain filtering"
+          description: "Search allowlisted websites with caching"
+          timeout_ms: 1500
 
     calc:
-      url: "wss://calc.svc.cluster.local:443"
+      name: "Financial Calculator Service"
+      url: ${MCP_CALC_URL}
+      url_local: ${MCP_CALC_URL_LOCAL}
       timeout_ms: 150
-      local_url: "ws://localhost:8085"
-      description: "Financial calculations with provenance tracking"
+      retry_attempts: 1
+      description: "Deterministic financial calculations with provenance tracking"
+      capabilities:
+        - irr_calculation
+        - npv_calculation
+        - dscr_calculation
+        - debt_yield_calculation
       tools:
         - name: "calc.compute"
-          description: "Perform financial calculations (IRR, NPV, DSCR)"
-          parameters:
-            formula: "Calculation type (irr, npv, dscr, etc.)"
-            inputs: "Calculation inputs as key-value pairs"
+          description: "Compute financial metrics with explanation"
+          timeout_ms: 150
 
     report:
-      url: "wss://report.svc.cluster.local:443"
+      name: "Report Generation Service"
+      url: ${MCP_REPORT_URL}
+      url_local: "http://localhost:8086"  # Lambda local for testing
       timeout_ms: 1500
-      local_url: "ws://localhost:8086"
-      description: "DOCX report generation with S3 storage"
+      retry_attempts: 1
+      description: "DOCX report generation with S3 storage and presigned URLs"
+      capabilities:
+        - docx_generation
+        - s3_storage
+        - presigned_urls
+        - template_rendering
       tools:
         - name: "report.create"
-          description: "Generate formatted DOCX report from analysis"
-          parameters:
-            structuredAnalysis: "Analysis data conforming to schema"
-            templateType: "Report template type (default: standard)"
+          description: "Generate DOCX report from structured analysis"
+          timeout_ms: 1500
 
+  # Connection settings
   connection:
-    retry_attempts: 3
-    retry_delay_ms: 1000
-    heartbeat_interval_ms: 30000
+    max_connections: 10
+    connection_timeout_ms: 5000
+    keepalive_interval_ms: 30000
+    max_message_size: 1048576  # 1MB
+    
+  # Health check configuration
+  health_check:
+    enabled: true
+    interval_ms: 60000
+    timeout_ms: 5000
+    unhealthy_threshold: 3
+    healthy_threshold: 2
 
-  security:
-    validate_certificates: true
-    allowed_origins: ["https://mavik-ai.com", "http://localhost:3000"]
+  # Monitoring and observability
+  monitoring:
+    metrics_enabled: true
+    tracing_enabled: true
+    log_requests: true
+    log_responses: false  # May contain sensitive data
+    
+  # Error handling
+  error_handling:
+    max_retries: 3
+    backoff_multiplier: 2.0
+    max_backoff_ms: 10000
+    circuit_breaker_enabled: true
+    circuit_breaker_threshold: 10
+    circuit_breaker_timeout_ms: 60000
