@@ -14,7 +14,7 @@ from tenacity import (
     wait_exponential,
 )
 
-from ..common.errors import (
+from mavik_common.errors import (
     BedrockError,
     BedrockModelNotFoundError,
     BedrockTokenLimitError,

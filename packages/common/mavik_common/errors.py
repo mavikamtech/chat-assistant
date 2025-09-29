@@ -425,6 +425,18 @@ class DocumentParsingError(BusinessLogicError):
         )
 
 
+class DocumentProcessingError(BusinessLogicError):
+    """Raised when document processing fails."""
+    
+    def __init__(self, document: str, operation: str, reason: str, **kwargs):
+        super().__init__(
+            message=f"Document processing failed for '{document}' during {operation}: {reason}",
+            error_code="DOCUMENT_PROCESSING_ERROR",
+            context={"document": document, "operation": operation, "reason": reason},
+            **kwargs
+        )
+
+
 class CalculationError(BusinessLogicError):
     """Raised when financial calculations fail."""
     

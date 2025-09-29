@@ -7,7 +7,7 @@ from functools import lru_cache
 from pydantic import Field, validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from ..common.errors import (
+from mavik_common.errors import (
     ConfigurationError,
     MissingEnvironmentVariableError,
     InvalidConfigurationValueError,

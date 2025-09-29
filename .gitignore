@@ -169,3 +169,34 @@ Desktop.ini
 # Editor temps
 *.tmp
 *.temp
+
+# Docker volumes data
+postgres_data/
+redis_data/
+opensearch_data/
+localstack_data/
+
+# Environment files
+.env.*
+!.env.example
+config.yaml
+config.json
+secrets.yaml
+secrets.json
+.secrets
+credentials.json
+
+# Poetry
+poetry.lock
+
+# Test fixtures and generated data
+fixtures/generated/
+test_output/
+
+# Docker compose overrides
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Local development configurations
+local_config/
+dev_settings/

@@ -9,7 +9,7 @@ import aioboto3
 import asyncpg
 from botocore.exceptions import ClientError, NoCredentialsError
 
-from ..common.errors import (
+from mavik_common.errors import (
     RDSError,
     AWSServiceError,
 )

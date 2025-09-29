@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "mavik-common"
+version = "0.1.0"
+description = "Common models and errors for Mavik AI services"
+authors = ["Mavik Capital <engineering@mavikcapital.com>"]
+packages = [{include = "mavik_common", from = "."}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

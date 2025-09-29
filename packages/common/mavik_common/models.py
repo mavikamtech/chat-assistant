@@ -42,6 +42,51 @@ class BaseResponse(BaseModel):
         extra = "forbid"
 
 
+# ===== MCP Protocol Models =====
+
+class MCPRequest(BaseModel):
+    """MCP protocol request wrapper."""
+    
+    method: str = Field(..., description="MCP method name")
+    params: Dict[str, Any] = Field(default_factory=dict, description="Method parameters")
+    id: Optional[Union[str, int]] = Field(None, description="Request ID")
+    jsonrpc: str = Field("2.0", description="JSON-RPC version")
+
+
+class MCPResponse(BaseModel):
+    """MCP protocol response wrapper."""
+    
+    result: Optional[Dict[str, Any]] = Field(None, description="Method result")
+    error: Optional[Dict[str, Any]] = Field(None, description="Error information")
+    id: Optional[Union[str, int]] = Field(None, description="Request ID")
+    jsonrpc: str = Field("2.0", description="JSON-RPC version")
+
+
+# ===== Document Models =====
+
+class DocumentMetadata(BaseModel):
+    """Document metadata information."""
+    
+    file_name: str = Field(..., description="Original filename")
+    file_size: int = Field(..., ge=0, description="File size in bytes")
+    file_type: str = Field(..., description="File MIME type")
+    upload_date: datetime = Field(default_factory=datetime.utcnow, description="Upload timestamp")
+    deal_id: Optional[str] = Field(None, description="Associated deal identifier")
+    page_count: Optional[int] = Field(None, ge=0, description="Number of pages")
+    language: Optional[str] = Field("en", description="Document language")
+
+
+class ParsedDocument(BaseModel):
+    """Parsed document result."""
+    
+    document_id: str = Field(..., description="Document identifier")
+    s3_uri: str = Field(..., description="Source S3 URI")
+    content: str = Field(..., description="Extracted text content")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Document metadata")
+    tables: List[Dict[str, Any]] = Field(default_factory=list, description="Extracted tables")
+    confidence: float = Field(1.0, ge=0.0, le=1.0, description="Extraction confidence")
+
+
 # ===== Enums =====
 
 class AssetType(str, Enum):
@@ -137,7 +182,82 @@ class RAGSearchResponse(BaseResponse):
     search_metadata: Dict[str, Any] = Field(default_factory=dict, description="Search metadata")
 
 
+class RAGIndexRequest(BaseRequest):
+    """Request model for RAG indexing tool."""
+    
+    s3_uri: str = Field(..., description="S3 URI of document to index")
+    deal_id: str = Field(..., description="Deal identifier for context")
+    force_reindex: bool = Field(False, description="Force reindexing if already indexed")
+    chunk_size: int = Field(1000, ge=100, le=5000, description="Chunk size for text splitting")
+    chunk_overlap: int = Field(200, ge=0, le=1000, description="Overlap between chunks")
+    extract_metadata: bool = Field(True, description="Extract document metadata")
+
+
+class RAGIndexResponse(BaseResponse):
+    """Response model for RAG indexing tool."""
+    
+    document_id: str = Field(..., description="Generated document identifier")
+    chunks_created: int = Field(0, ge=0, description="Number of chunks created")
+    embedding_model: str = Field(..., description="Embedding model used")
+    index_metadata: Dict[str, Any] = Field(default_factory=dict, description="Indexing metadata")
+
+
+class RAGDeleteRequest(BaseRequest):
+    """Request model for RAG document deletion."""
+    
+    document_id: Optional[str] = Field(None, description="Document ID to delete")
+    deal_id: Optional[str] = Field(None, description="Delete all documents for deal")
+    confirm_deletion: bool = Field(False, description="Confirmation flag for deletion")
+
+
+class RAGDeleteResponse(BaseResponse):
+    """Response model for RAG document deletion."""
+    
+    documents_deleted: int = Field(0, ge=0, description="Number of documents deleted")
+    chunks_deleted: int = Field(0, ge=0, description="Number of chunks deleted")
+    deletion_metadata: Dict[str, Any] = Field(default_factory=dict, description="Deletion metadata")
+
+
 # ===== Parser Tool Models =====
+
+class ParserRequest(BaseRequest):
+    """Request model for document parsing."""
+    
+    s3_uri: str = Field(..., description="S3 URI of document to parse")
+    deal_id: str = Field(..., description="Deal identifier for context")
+    force_reprocess: bool = Field(False, description="Force reprocessing if already parsed")
+    extract_tables: bool = Field(True, description="Extract structured tables")
+    extract_text: bool = Field(True, description="Extract text sections")
+    ocr_config: Dict[str, Any] = Field(default_factory=dict, description="OCR configuration")
+
+
+class ParserResponse(BaseResponse):
+    """Response model for document parsing."""
+    
+    document_id: str = Field(..., description="Generated document identifier")
+    parsed_content: ParsedDocument = Field(..., description="Parsed document content")
+    processing_time_ms: int = Field(..., ge=0, description="Processing time in milliseconds")
+    warnings: List[str] = Field(default_factory=list, description="Processing warnings")
+
+
+class ParserUploadRequest(BaseRequest):
+    """Request model for document upload and parsing."""
+    
+    deal_id: str = Field(..., description="Deal identifier for context")
+    filename: str = Field(..., description="Original filename")
+    content_type: str = Field(..., description="MIME type of the document")
+    extract_tables: bool = Field(True, description="Extract structured tables")
+    extract_text: bool = Field(True, description="Extract text sections")
+
+
+class ParserUploadResponse(BaseResponse):
+    """Response model for document upload and parsing."""
+    
+    s3_uri: str = Field(..., description="S3 URI where document was stored")
+    document_id: str = Field(..., description="Generated document identifier")
+    upload_size_bytes: int = Field(..., ge=0, description="Size of uploaded file")
+    parsing_initiated: bool = Field(..., description="Whether parsing was started")
+
 
 class ParserExtractRequest(BaseRequest):
     """Request model for document parser tool."""

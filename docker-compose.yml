@@ -1,0 +1,184 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for FinDB testing
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: mavik-postgres
+    environment:
+      POSTGRES_DB: findb_test
+      POSTGRES_USER: findb_user
+      POSTGRES_PASSWORD: findb_pass
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/sql/init-findb.sql:/docker-entrypoint-initdb.d/init-findb.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U findb_user -d findb_test"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: mavik-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # OpenSearch for vector storage (RAG server)
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: mavik-opensearch
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # LocalStack for AWS service mocking
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: mavik-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,textract,bedrock,lambda,dynamodb
+      - DEBUG=1
+      - LAMBDA_EXECUTOR=docker
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4566/_localstack/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RAG MCP Server
+  rag-server:
+    build:
+      context: .
+      dockerfile: ./services/mcp_servers/rag/Dockerfile
+    container_name: mavik-rag-server
+    ports:
+      - "8001:8001"
+    environment:
+      - OPENSEARCH_HOST=opensearch
+      - OPENSEARCH_PORT=9200
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_DOCUMENTS=mavik-documents-test
+      - S3_BUCKET_REPORTS=mavik-reports-test
+      - S3_BUCKET_TEMP=mavik-temp-test
+      - AZURE_AD_TENANT_ID=test-tenant-id
+      - AZURE_AD_CLIENT_ID=test-client-id
+      - AZURE_AD_CLIENT_SECRET=test-client-secret
+      - JWT_SECRET_KEY=test-jwt-secret-key-for-local-development-only
+      - DEBUG=true
+    depends_on:
+      - opensearch
+      - localstack
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Parser MCP Server
+  parser-server:
+    build:
+      context: .
+      dockerfile: ./services/mcp_servers/parser/Dockerfile
+    container_name: mavik-parser-server
+    ports:
+      - "8002:8002"
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - S3_BUCKET=mavik-documents-test
+      - S3_BUCKET_DOCUMENTS=mavik-documents-test
+      - S3_BUCKET_REPORTS=mavik-reports-test
+      - S3_BUCKET_TEMP=mavik-temp-test
+      - AZURE_AD_TENANT_ID=test-tenant-id
+      - AZURE_AD_CLIENT_ID=test-client-id
+      - AZURE_AD_CLIENT_SECRET=test-client-secret
+      - JWT_SECRET_KEY=test-jwt-secret-key-for-local-development-only
+      - DEBUG=true
+    depends_on:
+      - localstack
+    volumes:
+      - ./packages/evals/fixtures:/app/fixtures
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8002/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # FinDB MCP Server
+  findb-server:
+    build:
+      context: .
+      dockerfile: ./services/mcp_servers/findb/Dockerfile
+    container_name: mavik-findb-server
+    ports:
+      - "8003:8003"
+    environment:
+      - RDS_HOST=postgres
+      - RDS_PORT=5432
+      - RDS_DATABASE=findb_test
+      - RDS_USERNAME=findb_user
+      - RDS_PASSWORD=findb_pass
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_DOCUMENTS=mavik-documents-test
+      - S3_BUCKET_REPORTS=mavik-reports-test
+      - S3_BUCKET_TEMP=mavik-temp-test
+      - AZURE_AD_TENANT_ID=test-tenant-id
+      - AZURE_AD_CLIENT_ID=test-client-id
+      - AZURE_AD_CLIENT_SECRET=test-client-secret
+      - JWT_SECRET_KEY=test-jwt-secret-key-for-local-development-only
+      - DEBUG=true
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8003/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+  opensearch_data:
+  localstack_data:
+
+networks:
+  default:
+    name: mavik-network
