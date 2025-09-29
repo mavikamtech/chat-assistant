@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "description": "Multi-Agent AI Underwriting & Strategy System",
   "private": true,
-  "workspaces": [
-    "apps/web"
-  ],
   "packageManager": "pnpm@8.10.5",
   "scripts": {
     "dev": "pnpm --filter web dev",
