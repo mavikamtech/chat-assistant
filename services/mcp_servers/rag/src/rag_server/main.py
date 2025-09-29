@@ -2,6 +2,7 @@
 
 import logging
 import asyncio
+import os
 from datetime import datetime
 from typing import Any, Dict, Optional
 import json
@@ -66,23 +67,32 @@ async def initialize_services():
         logger.info("Initializing RAG MCP services...")
         
         # Initialize AWS clients
-        opensearch_client = OpenSearchClient()
+        # Construct OpenSearch endpoint for local development
+        opensearch_host = os.getenv("OPENSEARCH_HOST", "localhost")
+        opensearch_port = os.getenv("OPENSEARCH_PORT", "9200")
+        opensearch_endpoint = f"http://{opensearch_host}:{opensearch_port}"
+        
+        opensearch_client = OpenSearchClient(
+            domain_endpoint=opensearch_endpoint,
+            region_name=settings.aws_region,
+            aws_access_key_id=settings.aws_access_key_id,
+            aws_secret_access_key=settings.aws_secret_access_key,
+            use_ssl=False,  # Local development
+            verify_certs=False  # Local development
+        )
         bedrock_client = BedrockClient()
         s3_client = S3Client()
         textract_client = TextractClient()
         
         # Initialize document services
         document_processor = DocumentProcessor()
-        document_indexer = DocumentIndexer(
-            opensearch_client=opensearch_client,
-            s3_client=s3_client,
-        )
+        document_indexer = DocumentIndexer()
         
         # Initialize vector search
         vector_search = VectorSearchService(
             opensearch_client=opensearch_client,
             bedrock_client=bedrock_client,
-            index_name=settings.opensearch_index_name,
+            index_name=settings.opensearch_index_documents,
         )
         
         logger.info("RAG MCP services initialized successfully")

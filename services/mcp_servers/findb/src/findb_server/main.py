@@ -20,15 +20,12 @@ import structlog
 from pydantic import BaseModel, ValidationError as PydanticValidationError
 
 # Import models and service
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../..'))
-from packages.common.models import (
+from mavik_common.models import (
     FinDBQuery, FinDBResponse, MCPRequest, MCPResponse, MCPErrorResponse,
     FinDBQueryType, PropertyData, CompsRequest, MarketDataRequest
 )
-from packages.common.errors import FinDBError, ValidationError, MCPError
-from packages.config.settings import get_settings
+from mavik_common.errors import FinDBError, ValidationError, MCPError
+from mavik_config.settings import get_settings
 from .financial_database import FinDBService
 
 # Configure structured logging

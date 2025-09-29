@@ -32,16 +32,12 @@ from pydantic import BaseModel, Field, validator
 # Import models from common package
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../..'))
-from packages.common.models import (
+from mavik_common.models import (
     FinDBQuery, FinDBQueryType, CompsRequest, MarketDataRequest,
-    PropertyValuationRequest, CapRateAnalysisRequest, TrendAnalysisRequest,
-    FinDBResponse, CompsResult, MarketDataResult, PropertyValuationResult,
-    CapRateAnalysisResult, TrendAnalysisResult, PropertyData, MarketTrendData,
-    CompData, FinancialMetrics
+    PropertyData
 )
-from packages.common.errors import FinDBError, DatabaseError, ValidationError
-from packages.config.settings import Settings
+from mavik_common.errors import FinDBError, DatabaseError, ValidationError
+from mavik_config.settings import Settings
 
 # Configure structured logging
 logger = structlog.get_logger(__name__)

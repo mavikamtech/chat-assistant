@@ -535,3 +535,41 @@ def format_error_response(error: Exception) -> dict:
             "error_message": str(error),
             "error_context": {"exception_type": type(error).__name__},
         }
+
+
+# ===== FinDB Tool Errors =====
+
+class FinDBError(MavikError):
+    """Base class for financial database errors."""
+    
+    def __init__(self, message: str, query_type: Optional[str] = None, **kwargs):
+        super().__init__(
+            message=message,
+            error_code="FINDB_ERROR",
+            context={"query_type": query_type} if query_type else {},
+            **kwargs
+        )
+
+
+class FinDBConnectionError(FinDBError):
+    """Raised when FinDB connection fails."""
+    
+    def __init__(self, database_host: str, **kwargs):
+        super().__init__(
+            message=f"Failed to connect to financial database at {database_host}",
+            error_code="FINDB_CONNECTION_ERROR",
+            context={"database_host": database_host},
+            **kwargs
+        )
+
+
+class FinDBQueryError(FinDBError):
+    """Raised when FinDB query execution fails."""
+    
+    def __init__(self, query: str, error_details: str, **kwargs):
+        super().__init__(
+            message=f"Financial database query failed: {error_details}",
+            error_code="FINDB_QUERY_ERROR",
+            context={"query": query, "error_details": error_details},
+            **kwargs
+        )

@@ -62,6 +62,16 @@ class MCPResponse(BaseModel):
     jsonrpc: str = Field("2.0", description="JSON-RPC version")
 
 
+class MCPErrorResponse(BaseModel):
+    """MCP protocol error response."""
+    
+    code: int = Field(..., description="Error code")
+    message: str = Field(..., description="Error message")
+    data: Optional[Dict[str, Any]] = Field(None, description="Additional error data")
+    id: Optional[Union[str, int]] = Field(None, description="Request ID")
+    jsonrpc: str = Field("2.0", description="JSON-RPC version")
+
+
 # ===== Document Models =====
 
 class DocumentMetadata(BaseModel):
@@ -216,6 +226,60 @@ class RAGDeleteResponse(BaseResponse):
     documents_deleted: int = Field(0, ge=0, description="Number of documents deleted")
     chunks_deleted: int = Field(0, ge=0, description="Number of chunks deleted")
     deletion_metadata: Dict[str, Any] = Field(default_factory=dict, description="Deletion metadata")
+
+
+# ===== Document Structure Models =====
+
+class BoundingBox(BaseModel):
+    """Bounding box coordinates for document elements."""
+    
+    left: float = Field(..., ge=0, le=1, description="Left coordinate (normalized)")
+    top: float = Field(..., ge=0, le=1, description="Top coordinate (normalized)")
+    width: float = Field(..., ge=0, le=1, description="Width (normalized)")
+    height: float = Field(..., ge=0, le=1, description="Height (normalized)")
+
+
+class DocumentElement(BaseModel):
+    """Base class for document elements."""
+    
+    element_id: str = Field(..., description="Unique element identifier")
+    element_type: str = Field(..., description="Type of element (text, table, form, etc.)")
+    page_number: int = Field(..., ge=1, description="Page number where element appears")
+    bounding_box: Optional[BoundingBox] = Field(None, description="Element bounding box")
+    confidence: float = Field(1.0, ge=0.0, le=1.0, description="Detection confidence")
+
+
+class DocumentPage(BaseModel):
+    """Document page with extracted elements."""
+    
+    page_number: int = Field(..., ge=1, description="Page number")
+    width: float = Field(..., gt=0, description="Page width in points")
+    height: float = Field(..., gt=0, description="Page height in points")
+    elements: List[DocumentElement] = Field(default_factory=list, description="Page elements")
+    extracted_text: str = Field("", description="Full page text content")
+
+
+class DocumentTable(BaseModel):
+    """Table extracted from document."""
+    
+    table_id: str = Field(..., description="Unique table identifier")
+    headers: List[str] = Field(default_factory=list, description="Table headers")
+    rows: List[List[str]] = Field(default_factory=list, description="Table data rows")
+    page_number: int = Field(..., ge=1, description="Source page number")
+    bounding_box: Optional[BoundingBox] = Field(None, description="Table bounding box")
+    confidence: float = Field(1.0, ge=0.0, le=1.0, description="Extraction confidence")
+
+
+class DocumentForm(BaseModel):
+    """Form field extracted from document."""
+    
+    field_id: str = Field(..., description="Unique field identifier")
+    field_name: str = Field(..., description="Form field name")
+    field_value: str = Field("", description="Form field value")
+    field_type: str = Field("text", description="Form field type")
+    page_number: int = Field(..., ge=1, description="Source page number")
+    bounding_box: Optional[BoundingBox] = Field(None, description="Field bounding box")
+    confidence: float = Field(1.0, ge=0.0, le=1.0, description="Extraction confidence")
 
 
 # ===== Parser Tool Models =====
@@ -560,6 +624,82 @@ class StructuredAnalysis(BaseModel):
     recommendation: str = Field(..., description="Investment recommendation")
     risk_factors: List[str] = Field(default_factory=list, description="Identified risk factors")
     key_metrics: Dict[str, float] = Field(default_factory=dict, description="Key financial metrics")
+
+
+# ===== FinDB Tool Models =====
+
+class FinDBQueryType(str, Enum):
+    """Types of financial database queries."""
+    
+    PROPERTY = "property"
+    COMPS = "comps" 
+    MARKET_DATA = "market_data"
+    PORTFOLIO = "portfolio"
+    SEARCH = "search"
+
+
+class PropertyData(BaseModel):
+    """Property information and metrics."""
+    
+    property_id: str = Field(..., description="Unique property identifier")
+    address: str = Field(..., description="Property address")
+    city: str = Field(..., description="City")
+    state: str = Field(..., description="State/Province")
+    country: str = Field("US", description="Country code")
+    property_type: str = Field(..., description="Property type (office, retail, etc.)")
+    square_feet: Optional[float] = Field(None, ge=0, description="Total square footage")
+    year_built: Optional[int] = Field(None, ge=1800, description="Year constructed")
+    occupancy_rate: Optional[float] = Field(None, ge=0, le=1, description="Current occupancy rate")
+    asking_rent_psf: Optional[float] = Field(None, ge=0, description="Asking rent per square foot")
+    market_value: Optional[float] = Field(None, ge=0, description="Current market value")
+    cap_rate: Optional[float] = Field(None, ge=0, description="Capitalization rate")
+    noi: Optional[float] = Field(None, description="Net Operating Income")
+
+
+class CompsRequest(BaseModel):
+    """Request for comparable properties analysis."""
+    
+    target_property_id: str = Field(..., description="Target property for comparison")
+    radius_miles: float = Field(5.0, ge=0.1, le=50, description="Search radius in miles")
+    property_types: List[str] = Field(default_factory=list, description="Property types to include")
+    min_square_feet: Optional[float] = Field(None, ge=0, description="Minimum square footage")
+    max_square_feet: Optional[float] = Field(None, ge=0, description="Maximum square footage")
+    max_age_years: Optional[int] = Field(None, ge=1, description="Maximum property age")
+    limit: int = Field(10, ge=1, le=100, description="Maximum comparables to return")
+
+
+class MarketDataRequest(BaseModel):
+    """Request for market data and analytics."""
+    
+    market_area: str = Field(..., description="Market area identifier")
+    property_types: List[str] = Field(default_factory=list, description="Property types")
+    date_range_start: Optional[datetime] = Field(None, description="Start date for historical data")
+    date_range_end: Optional[datetime] = Field(None, description="End date for historical data")
+    metrics: List[str] = Field(default_factory=list, description="Specific metrics to retrieve")
+
+
+class FinDBQuery(BaseRequest):
+    """Request model for financial database queries."""
+    
+    query_type: FinDBQueryType = Field(..., description="Type of query to execute")
+    property_id: Optional[str] = Field(None, description="Property ID for property-specific queries")
+    search_criteria: Dict[str, Any] = Field(default_factory=dict, description="Search parameters")
+    comps_request: Optional[CompsRequest] = Field(None, description="Comparables request parameters")
+    market_request: Optional[MarketDataRequest] = Field(None, description="Market data request parameters")
+    include_financials: bool = Field(True, description="Include financial data")
+    include_market_data: bool = Field(True, description="Include market metrics")
+    format: str = Field("json", description="Response format")
+
+
+class FinDBResponse(BaseResponse):
+    """Response model for financial database queries."""
+    
+    query_type: FinDBQueryType = Field(..., description="Type of query executed")
+    property_data: Optional[PropertyData] = Field(None, description="Property information")
+    comparables: List[PropertyData] = Field(default_factory=list, description="Comparable properties")
+    market_data: Dict[str, Any] = Field(default_factory=dict, description="Market analytics")
+    total_records: int = Field(0, ge=0, description="Total records found")
+    query_metadata: Dict[str, Any] = Field(default_factory=dict, description="Query execution metadata")
 
 
 # Update forward references
