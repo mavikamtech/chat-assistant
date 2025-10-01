@@ -1,8 +1,0 @@
-# Lambda Layer Dependencies
-# This directory contains shared dependencies for Lambda functions
-
-# Placeholder requirements.txt for Python Lambda Layer
-requests>=2.31.0
-boto3>=1.28.0
-psycopg2-binary>=2.9.0
-opensearch-py>=2.3.0
