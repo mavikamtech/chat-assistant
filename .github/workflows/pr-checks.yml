@@ -27,10 +27,16 @@ jobs:
           poetry install --no-interaction
 
       - name: Ruff (scoped)
-        run: poetry run ruff check packages/common tests/common
+        run: |
+          poetry run ruff check packages/common tests/common
+          poetry run ruff check apps/orchestrator tests/orchestrator
 
       - name: MyPy (scoped)
-        run: poetry run mypy packages/common
+        run: |
+          poetry run mypy packages/common
+          poetry run mypy apps/orchestrator
 
       - name: PyTest (scoped)
-        run: poetry run pytest -q tests/common -q
+        run: |
+          poetry run pytest -q tests/common -q
+          poetry run pytest -q tests/orchestrator -q

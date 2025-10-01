@@ -169,11 +169,8 @@ ignore_missing_imports = true
 # Pytest configuration
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --strict-markers --cov=packages/common --cov-report=term-missing --cov-report=html"
+addopts = "-ra -q --strict-markers --cov=packages/common --cov=apps/orchestrator --cov-report=term-missing --cov-report=html"
 testpaths = [
-    "apps",
-    "services",
-    "packages",
     "tests",
 ]
 python_files = [
