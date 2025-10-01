@@ -1,29 +1,12 @@
-"""Shared packages for Mavik AI system."""
+"""Mavik shared packages namespace.
 
-# Import key modules for easy access
-from .common import *
-from .config import Settings, get_settings
-from .aws_clients import (
-    BedrockClient,
-    S3Client,
-    DynamoDBClient,
-    RDSClient,
-    OpenSearchClient,
-    TextractClient,
-)
+Keep this file intentionally lightweight to avoid side effects when importing
+subpackages like ``packages.common`` in tests or tools. Heavy modules (e.g.,
+configuration loaders, AWS clients) should be imported explicitly from their
+own subpackages by consumers instead of being auto-imported here.
+"""
 
+# Expose only the lightweight "common" subpackage by default.
 __all__ = [
-    # Configuration
-    "Settings",
-    "get_settings",
-    
-    # AWS Clients
-    "BedrockClient",
-    "S3Client", 
-    "DynamoDBClient",
-    "RDSClient",
-    "OpenSearchClient",
-    "TextractClient",
-    
-    # Common models and errors (imported via *)
+    "common",
 ]

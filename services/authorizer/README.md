@@ -27,7 +27,7 @@ AZURE_AD_TENANT_ID=your-tenant-id
 AZURE_AD_CLIENT_ID=your-client-id
 AZURE_AD_CLIENT_SECRET=your-client-secret
 
-# JWT Configuration  
+# JWT Configuration
 JWT_SECRET_KEY=your-jwt-secret
 JWT_ALGORITHM=HS256
 
@@ -92,23 +92,23 @@ Custom JWT token for development:
 
 ## Roles and Permissions
 
-| Role | Permissions |
-|------|-------------|
-| `viewer` | Read-only access to deals, documents, reports |
-| `analyst` | Full analysis capabilities, MNPI internal access |
-| `senior_analyst` | Delete permissions, MNPI confidential access |
-| `portfolio_manager` | All deal operations, MNPI restricted access |
-| `compliance_officer` | Audit trails, MNPI management |
-| `admin` | Full system access |
+| Role                 | Permissions                                      |
+| -------------------- | ------------------------------------------------ |
+| `viewer`             | Read-only access to deals, documents, reports    |
+| `analyst`            | Full analysis capabilities, MNPI internal access |
+| `senior_analyst`     | Delete permissions, MNPI confidential access     |
+| `portfolio_manager`  | All deal operations, MNPI restricted access      |
+| `compliance_officer` | Audit trails, MNPI management                    |
+| `admin`              | Full system access                               |
 
 ## MNPI Classifications
 
-| Level | Description | Required Permission |
-|-------|-------------|-------------------|
-| `public` | Public information | None |
-| `internal` | Internal use only | `access_mnpi_internal` |
+| Level          | Description              | Required Permission        |
+| -------------- | ------------------------ | -------------------------- |
+| `public`       | Public information       | None                       |
+| `internal`     | Internal use only        | `access_mnpi_internal`     |
 | `confidential` | Confidential information | `access_mnpi_confidential` |
-| `restricted` | Highly sensitive | `access_mnpi_restricted` |
+| `restricted`   | Highly sensitive         | `access_mnpi_restricted`   |
 
 ## Development
 
@@ -163,12 +163,12 @@ Example log entry:
 
 ## Error Handling
 
-| Error Type | HTTP Status | Description |
-|------------|-------------|-------------|
-| `AuthenticationError` | 401 | Invalid or expired token |
-| `AuthorizationError` | 403 | Insufficient permissions |
-| `MNPIAccessDeniedError` | 403 | MNPI access violation |
-| `ConfigurationError` | 500 | System configuration issue |
+| Error Type              | HTTP Status | Description                |
+| ----------------------- | ----------- | -------------------------- |
+| `AuthenticationError`   | 401         | Invalid or expired token   |
+| `AuthorizationError`    | 403         | Insufficient permissions   |
+| `MNPIAccessDeniedError` | 403         | MNPI access violation      |
+| `ConfigurationError`    | 500         | System configuration issue |
 
 ## Security Considerations
 

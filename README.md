@@ -39,11 +39,26 @@ A production-ready, end-to-end AI underwriting and strategy system built with Py
    export MOCK_AWS=true
    ```
 
-3. **Start all services** (VS Code):
-   - Open workspace in VS Code
-   - Run task: "Run All (Local Mock)"
+3. **Run the Orchestrator locally**
+  - VS Code Task: open Command Palette → "Tasks: Run Task" → "Orchestrator"
+  - VS Code Debug: Run and Debug panel → "Orchestrator (Uvicorn Debug)"
+  - Terminal (optional): `poetry run uvicorn apps.orchestrator.main:app --reload --host 127.0.0.1 --port 8080`
 
-4. **Run smoke tests**:
+4. **Smoke test the API**
+  - Health: `curl http://127.0.0.1:8080/health`
+  - Orchestrate: `curl -X POST http://127.0.0.1:8080/orchestrate -H "Content-Type: application/json" -d '{"message":"hello"}'`
+  - Postman: import the two requests above; expect `{ "status":"ok" }` and an echo response with `agent_used: "pre-screening"`.
+
+5. **Production LLM endpoint (AWS Bedrock)**
+   - Configure environment:
+     - `AWS_REGION` (or `AWS_DEFAULT_REGION`)
+     - `BEDROCK_MODEL_ID` (default: anthropic.claude-3-5-sonnet-20240620-v1:0)
+     - Optional: `BEDROCK_TEMPERATURE` (0.2), `BEDROCK_MAX_TOKENS` (2048), `BEDROCK_TOP_P` (0.9)
+   - Call the endpoint:
+     - `curl -X POST http://127.0.0.1:8080/chat -H "Content-Type: application/json" -d '{"message":"Summarize this system."}'`
+   - If Bedrock is not configured, the endpoint returns HTTP 503 with an error detail.
+
+6. **Run smoke tests**:
    ```bash
    python apps/smoke/smoke_orchestrator_local.py
    python apps/smoke/smoke_tools_local.py

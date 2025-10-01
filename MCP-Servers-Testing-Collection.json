@@ -1,0 +1,358 @@
+{
+	"info": {
+		"_postman_id": "mcp-servers-testing-collection",
+		"name": "MCP Servers Testing Collection",
+		"description": "Comprehensive testing collection for RAG and Parser MCP servers without admin access requirements",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "RAG Server Tests",
+			"item": [
+				{
+					"name": "RAG Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{rag_base_url}}/health",
+							"host": [
+								"{{rag_base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Test RAG server health status and dependencies"
+					},
+					"response": []
+				},
+				{
+					"name": "RAG OpenSearch Connection Test",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{opensearch_url}}/_cluster/health",
+							"host": [
+								"{{opensearch_url}}"
+							],
+							"path": [
+								"_cluster",
+								"health"
+							]
+						},
+						"description": "Verify OpenSearch cluster connectivity for RAG operations"
+					},
+					"response": []
+				},
+				{
+					"name": "RAG Server Documentation Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{rag_base_url}}/docs",
+							"host": [
+								"{{rag_base_url}}"
+							],
+							"path": [
+								"docs"
+							]
+						},
+						"description": "Check if RAG server has FastAPI documentation endpoint"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests for RAG MCP Server (port 8001)"
+		},
+		{
+			"name": "Parser Server Tests",
+			"item": [
+				{
+					"name": "Parser Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{parser_base_url}}/health",
+							"host": [
+								"{{parser_base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Test Parser server health status and capabilities"
+					},
+					"response": []
+				},
+				{
+					"name": "Parser Document Upload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Upload a test document (PDF, Word, etc.)"
+								},
+								{
+									"key": "document_id",
+									"value": "test-upload-{{$timestamp}}",
+									"type": "text",
+									"description": "Unique document identifier"
+								},
+								{
+									"key": "extract_tables",
+									"value": "true",
+									"type": "text",
+									"description": "Enable table extraction"
+								},
+								{
+									"key": "extract_forms",
+									"value": "true",
+									"type": "text",
+									"description": "Enable form key-value extraction"
+								},
+								{
+									"key": "extract_signatures",
+									"value": "false",
+									"type": "text",
+									"description": "Enable signature detection"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{parser_base_url}}/upload",
+							"host": [
+								"{{parser_base_url}}"
+							],
+							"path": [
+								"upload"
+							]
+						},
+						"description": "Upload and parse document via HTTP endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Parser Server Documentation Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{parser_base_url}}/docs",
+							"host": [
+								"{{parser_base_url}}"
+							],
+							"path": [
+								"docs"
+							]
+						},
+						"description": "Check if Parser server has FastAPI documentation endpoint"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests for Parser MCP Server (port 8002)"
+		},
+		{
+			"name": "Infrastructure Tests",
+			"item": [
+				{
+					"name": "OpenSearch Cluster Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{opensearch_url}}/_cluster/health",
+							"host": [
+								"{{opensearch_url}}"
+							],
+							"path": [
+								"_cluster",
+								"health"
+							]
+						},
+						"description": "Check OpenSearch cluster status"
+					},
+					"response": []
+				},
+				{
+					"name": "OpenSearch Node Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{opensearch_url}}/_nodes",
+							"host": [
+								"{{opensearch_url}}"
+							],
+							"path": [
+								"_nodes"
+							]
+						},
+						"description": "Get OpenSearch node information"
+					},
+					"response": []
+				},
+				{
+					"name": "LocalStack Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localstack_url}}/_localstack/health",
+							"host": [
+								"{{localstack_url}}"
+							],
+							"path": [
+								"_localstack",
+								"health"
+							]
+						},
+						"description": "Check LocalStack AWS services status"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests for supporting infrastructure services"
+		},
+		{
+			"name": "Error Testing",
+			"item": [
+				{
+					"name": "RAG Invalid Endpoint",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{rag_base_url}}/invalid-endpoint",
+							"host": [
+								"{{rag_base_url}}"
+							],
+							"path": [
+								"invalid-endpoint"
+							]
+						},
+						"description": "Test 404 error handling on RAG server"
+					},
+					"response": []
+				},
+				{
+					"name": "Parser Invalid Method",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{parser_base_url}}/mcp",
+							"host": [
+								"{{parser_base_url}}"
+							],
+							"path": [
+								"mcp"
+							]
+						},
+						"description": "Test method not allowed on WebSocket endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Parser Upload Without File",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "document_id",
+									"value": "no-file-test",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{parser_base_url}}/upload",
+							"host": [
+								"{{parser_base_url}}"
+							],
+							"path": [
+								"upload"
+							]
+						},
+						"description": "Test validation error when no file is uploaded"
+					},
+					"response": []
+				}
+			],
+			"description": "Error handling and validation tests"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set up test environment",
+					"console.log('Running MCP Server Test...');"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Basic response validation",
+					"pm.test('Status code is successful', function () {",
+					"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]);",
+					"});",
+					"",
+					"pm.test('Response time is acceptable', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Health check specific validation",
+					"if (pm.request.url.path.includes('health')) {",
+					"    pm.test('Health response contains required fields', function () {",
+					"        const jsonData = pm.response.json();",
+					"        pm.expect(jsonData).to.have.property('service');",
+					"        pm.expect(jsonData).to.have.property('status');",
+					"        pm.expect(jsonData).to.have.property('timestamp');",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "rag_base_url",
+			"value": "http://localhost:8001",
+			"type": "string"
+		},
+		{
+			"key": "parser_base_url",
+			"value": "http://localhost:8002",
+			"type": "string"
+		},
+		{
+			"key": "opensearch_url",
+			"value": "http://localhost:9200",
+			"type": "string"
+		},
+		{
+			"key": "localstack_url",
+			"value": "http://localhost:4566",
+			"type": "string"
+		}
+	]
+}

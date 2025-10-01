@@ -35,7 +35,7 @@ docker-compose ps
 
 # Should show:
 # - postgres (healthy)
-# - redis (healthy) 
+# - redis (healthy)
 # - opensearch (healthy)
 # - localstack (healthy)
 # - rag-server (healthy)
@@ -55,7 +55,7 @@ curl http://localhost:8001/health
 # Expected Response:
 # {"status": "healthy", "service": "rag-server", "timestamp": "2025-09-29T..."}
 
-# Parser Server Health  
+# Parser Server Health
 curl http://localhost:8002/health
 
 # Expected Response:
@@ -176,7 +176,7 @@ curl -X POST "http://localhost:8001/documents" \
 # {"document_id": "doc_xyz", "status": "indexed", "chunks": 3}
 ```
 
-### Test 2: Search Documents  
+### Test 2: Search Documents
 ```powershell
 # Search for content
 curl -X POST "http://localhost:8001/search" \
@@ -203,7 +203,7 @@ wscat -c ws://localhost:8001/mcp
 # Initialize connection (same as above)
 # Then search via MCP:
 {
-  "jsonrpc": "2.0", 
+  "jsonrpc": "2.0",
   "id": 3,
   "method": "tools/call",
   "params": {
@@ -227,7 +227,7 @@ docker-compose exec postgres psql -U postgres -d mavikdb
 
 # Check sample data:
 SELECT * FROM locations LIMIT 5;
-SELECT * FROM properties LIMIT 5; 
+SELECT * FROM properties LIMIT 5;
 SELECT * FROM financials LIMIT 5;
 SELECT * FROM property_metrics LIMIT 5;
 
@@ -285,7 +285,7 @@ wscat -c ws://localhost:8003/mcp
 # Initialize, then call financial analysis:
 {
   "jsonrpc": "2.0",
-  "id": 4, 
+  "id": 4,
   "method": "tools/call",
   "params": {
     "name": "analyze_comparable_properties",
@@ -326,7 +326,7 @@ curl -X POST "http://localhost:8003/comparable-properties" \
   -H "Content-Type: application/json" \
   -d '{
     "property_type": "office",
-    "location": "downtown", 
+    "location": "downtown",
     "square_feet": 50000
   }'
 
@@ -341,7 +341,7 @@ curl -X POST "http://localhost:8003/comparable-properties" \
 ```powershell
 # Check logs for specific service
 docker-compose logs rag-server
-docker-compose logs parser-server  
+docker-compose logs parser-server
 docker-compose logs findb-server
 docker-compose logs postgres
 
@@ -399,15 +399,15 @@ docker-compose exec findb-server curl http://opensearch:9200
 
 ## 🎯 **What Each Test Validates**
 
-| Component | Manual Test | Validates |
-|-----------|-------------|-----------|
-| **Docker** | `docker-compose ps` | All services running |
-| **Health** | `curl /health` endpoints | Service availability |
-| **Database** | PostgreSQL queries | Data persistence |  
-| **Parser** | PDF upload via API | Document processing |
-| **RAG** | Document indexing/search | Vector search |
-| **FinDB** | Property analysis API | Financial calculations |
-| **MCP** | WebSocket connections | Tool protocol |
-| **Integration** | End-to-end workflow | Complete system |
+| Component       | Manual Test              | Validates              |
+| --------------- | ------------------------ | ---------------------- |
+| **Docker**      | `docker-compose ps`      | All services running   |
+| **Health**      | `curl /health` endpoints | Service availability   |
+| **Database**    | PostgreSQL queries       | Data persistence       |
+| **Parser**      | PDF upload via API       | Document processing    |
+| **RAG**         | Document indexing/search | Vector search          |
+| **FinDB**       | Property analysis API    | Financial calculations |
+| **MCP**         | WebSocket connections    | Tool protocol          |
+| **Integration** | End-to-end workflow      | Complete system        |
 
 **This manual approach gives you complete control and visibility into each step!** 🚀

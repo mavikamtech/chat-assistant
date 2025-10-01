@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 # Copy packages directory to PYTHONPATH
 COPY packages/ /app/packages/
 
-# Copy application code first (required for Poetry installation)  
+# Copy application code first (required for Poetry installation)
 COPY services/mcp_servers/findb/src/ ./src/
 COPY services/mcp_servers/findb/tests/ ./tests/
 

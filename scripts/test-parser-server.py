@@ -13,12 +13,12 @@ from pathlib import Path
 
 async def test_parser_server():
     """Test Parser MCP Server functionality"""
-    
+
     print("📄 Testing Parser MCP Server...")
-    
+
     base_url = "http://localhost:8002"
     ws_url = "ws://localhost:8002/mcp"
-    
+
     # Test 1: Health check
     print("\n1. Health Check...")
     async with aiohttp.ClientSession() as session:
@@ -31,7 +31,7 @@ async def test_parser_server():
         except Exception as e:
             print(f"   ❌ Health check failed: {e}")
             return False
-    
+
     # Test 2: Capabilities endpoint
     print("\n2. Capabilities Check...")
     async with aiohttp.ClientSession() as session:
@@ -44,15 +44,15 @@ async def test_parser_server():
         except Exception as e:
             print(f"   ❌ Capabilities check failed: {e}")
             return False
-    
+
     # Test 3: File upload and parsing
     print("\n3. Document Upload and Parse Test...")
-    
+
     # Check if we have the test PDF
     test_pdf_path = Path("packages/evals/fixtures/300_Hillsborough_OM.pdf")
     if test_pdf_path.exists():
         print(f"   📄 Using test PDF: {test_pdf_path}")
-        
+
         async with aiohttp.ClientSession() as session:
             try:
                 # Upload file for parsing
@@ -61,22 +61,22 @@ async def test_parser_server():
                     form_data.add_field('file', f, filename='test_om.pdf', content_type='application/pdf')
                     form_data.add_field('document_type', 'offering_memorandum')
                     form_data.add_field('use_textract', 'false')  # Use local parser first
-                    
+
                     async with session.post(f"{base_url}/api/upload", data=form_data) as response:
                         upload_result = await response.json()
                         print(f"   ✅ Document parsed successfully")
-                        
+
                         # Check parsing results
                         if 'parsed_content' in upload_result:
                             content = upload_result['parsed_content']
                             print(f"      📊 Content length: {len(content.get('text', ''))} characters")
                             print(f"      📑 Pages: {content.get('page_count', 'Unknown')}")
                             print(f"      🏢 Tables: {len(content.get('tables', []))}")
-                            
+
                             # Show sample text
                             text_sample = content.get('text', '')[:200]
                             print(f"      💬 Sample text: {text_sample}...")
-                            
+
             except Exception as e:
                 print(f"   ❌ File upload failed: {e}")
                 # Try with a simple text document
@@ -86,7 +86,7 @@ async def test_parser_server():
         # Try with a simple text document
         async with aiohttp.ClientSession() as session:
             await test_text_parsing(session, base_url)
-    
+
     # Test 4: WebSocket MCP Protocol
     print("\n4. MCP Protocol Test...")
     try:
@@ -103,11 +103,11 @@ async def test_parser_server():
                     "use_textract": False
                 }
             }
-            
+
             await websocket.send(json.dumps(parse_request))
             response = await websocket.recv()
             result = json.loads(response)
-            
+
             if result.get("result", {}).get("success"):
                 parsed_data = result["result"]["data"]
                 print(f"   ✅ MCP parsing successful")
@@ -115,11 +115,11 @@ async def test_parser_server():
                 print(f"      📊 Content length: {len(parsed_data.get('parsed_content', {}).get('text', ''))}")
             else:
                 print(f"   ❌ MCP parsing failed: {result.get('error', 'Unknown error')}")
-                
+
     except Exception as e:
         print(f"   ❌ WebSocket MCP test failed: {e}")
         return False
-    
+
     # Test 5: Format detection
     print("\n5. Format Detection Test...")
     test_formats = [
@@ -128,7 +128,7 @@ async def test_parser_server():
         ("JPEG content", b"\xff\xd8\xff", "jpeg"),
         ("Text content", b"This is plain text", "text")
     ]
-    
+
     async with aiohttp.ClientSession() as session:
         for name, content, expected_format in test_formats:
             try:
@@ -139,15 +139,15 @@ async def test_parser_server():
                 ) as response:
                     format_result = await response.json()
                     detected = format_result.get("format", "unknown")
-                    
+
                     if detected == expected_format:
                         print(f"   ✅ {name}: {detected}")
                     else:
                         print(f"   ⚠️ {name}: Expected {expected_format}, got {detected}")
-                        
+
             except Exception as e:
                 print(f"   ❌ Format detection failed for {name}: {e}")
-    
+
     print("\n🎉 Parser MCP Server tests completed successfully!")
     return True
 
@@ -156,17 +156,17 @@ async def test_text_parsing(session, base_url):
     try:
         # Create a simple text document
         form_data = aiohttp.FormData()
-        form_data.add_field('file', 
-                          "OFFERING MEMORANDUM\n\n123 Main Street Office Building\nExcellent investment opportunity!", 
-                          filename='test.txt', 
+        form_data.add_field('file',
+                          "OFFERING MEMORANDUM\n\n123 Main Street Office Building\nExcellent investment opportunity!",
+                          filename='test.txt',
                           content_type='text/plain')
         form_data.add_field('document_type', 'offering_memorandum')
-        
+
         async with session.post(f"{base_url}/api/upload", data=form_data) as response:
             upload_result = await response.json()
             print(f"   ✅ Text document parsed")
             print(f"      📊 Content: {len(upload_result.get('parsed_content', {}).get('text', ''))} chars")
-            
+
     except Exception as e:
         print(f"   ⚠️ Text parsing fallback failed: {e}")
 

@@ -39,7 +39,7 @@ Find comparable properties based on search criteria.
   "max_results": 10,                // Maximum number of results (optional)
   "property_filter": {              // Optional filtering criteria
     "min_size": 40000,              // Minimum square footage
-    "max_size": 80000,              // Maximum square footage  
+    "max_size": 80000,              // Maximum square footage
     "min_price": 4000000,           // Minimum sale price
     "max_price": 8000000,           // Maximum sale price
     "year_built_min": 2000,         // Minimum year built
@@ -371,7 +371,7 @@ RDS_DATABASE=findb
 RDS_USERNAME=findb_user
 RDS_PASSWORD=secure_password
 
-# Application Configuration  
+# Application Configuration
 DEBUG=false
 LOG_LEVEL=INFO
 
@@ -497,7 +497,7 @@ GET /health
 ### Error Codes
 
 - `FINDB_PROCESSING_ERROR`: General processing error
-- `DATABASE_ERROR`: Database connectivity or query error  
+- `DATABASE_ERROR`: Database connectivity or query error
 - `VALIDATION_ERROR`: Input validation error
 - `MCP_ERROR`: MCP protocol error
 
@@ -506,8 +506,8 @@ GET /health
 Structured logging with contextual information:
 
 ```python
-logger.info("Processing FinDB query", 
-           query_type="COMPS", 
+logger.info("Processing FinDB query",
+           query_type="COMPS",
            property_id="prop_123",
            radius_miles=5.0)
 ```
@@ -549,7 +549,7 @@ import json
 
 async def query_findb():
     uri = "ws://localhost:8003/mcp"
-    
+
     async with websockets.connect(uri) as websocket:
         # Send MCP request
         request = {
@@ -562,10 +562,10 @@ async def query_findb():
                 "max_results": 10
             }
         }
-        
+
         await websocket.send(json.dumps(request))
         response = await websocket.recv()
-        
+
         result = json.loads(response)
         print(f"Found {len(result['result']['data']['comparable_properties'])} comps")
 

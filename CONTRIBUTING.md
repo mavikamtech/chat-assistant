@@ -7,7 +7,7 @@ Thank you for your interest in contributing to Mavik AI! This document provides 
 ### Prerequisites
 - Python 3.11+
 - Poetry (Python dependency management)
-- Node.js 18+ 
+- Node.js 18+
 - pnpm (Node.js package manager)
 - AWS CLI configured (for cloud deployment)
 
@@ -120,20 +120,20 @@ from packages.common.errors import ValidationError
 
 async def search_documents(request: RAGSearchRequest) -> RAGSearchResponse:
     \"\"\"Search documents using hybrid vector + BM25 approach.
-    
+
     Args:
         request: Search parameters including query and filters
-        
+
     Returns:
         Search results with chunks and citations
-        
+
     Raises:
         ValidationError: If request parameters are invalid
         TimeoutError: If search exceeds 800ms timeout
     \"\"\"
     if not request.query.strip():
         raise ValidationError("Query cannot be empty")
-        
+
     # Implementation...
 ```
 
@@ -153,7 +153,7 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message, onCitationClick }: ChatMessageProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   return (
     <div className="p-4 border rounded-lg">
       {/* Implementation... */}
@@ -206,11 +206,11 @@ async def test_hybrid_search_with_filters(mock_opensearch):
         filters={"asset_type": "multifamily", "geo": "austin"},
         topK=5
     )
-    
+
     # Act
     with patch("services.mcp_rag.search.get_opensearch_client", return_value=mock_opensearch):
         results = await hybrid_search(request)
-    
+
     # Assert
     assert len(results.chunks) <= 5
     mock_opensearch.search.assert_called_once()

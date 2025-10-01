@@ -2,6 +2,31 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Orchestrator (Uvicorn Debug)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "apps.orchestrator.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8080",
+        "--reload"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "APP_ENV": "local",
+        "MOCK_AWS": "true",
+        "LOG_LEVEL": "DEBUG",
+        "HOST": "0.0.0.0",
+        "PORT": "8080"
+      },
+      "justMyCode": true,
+      "jinja": true,
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Orchestrator (Local)",
       "type": "debugpy",
       "request": "launch",

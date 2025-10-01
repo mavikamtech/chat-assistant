@@ -24,7 +24,7 @@ python scripts/test-infrastructure.py
 ### MCP Servers
 ```bash
 python scripts/test-rag-server.py      # Document search & retrieval
-python scripts/test-parser-server.py   # Document parsing 
+python scripts/test-parser-server.py   # Document parsing
 python scripts/test-findb-server.py    # Financial database
 ```
 
@@ -39,7 +39,7 @@ python scripts/test-integration.py     # End-to-end workflows
 ```bash
 docker-compose ps                       # Service status
 curl http://localhost:8001/health      # RAG server
-curl http://localhost:8002/health      # Parser server  
+curl http://localhost:8002/health      # Parser server
 curl http://localhost:8003/health      # FinDB server
 ```
 
@@ -54,11 +54,11 @@ docker-compose logs postgres            # Database logs
 ## 🎯 Test Scenarios
 
 ### Document Processing
-1. Upload PDF: `POST http://localhost:8002/parse` 
+1. Upload PDF: `POST http://localhost:8002/parse`
 2. Index document: `WebSocket ws://localhost:8001/mcp`
 3. Search content: `WebSocket ws://localhost:8001/mcp`
 
-### Financial Analysis  
+### Financial Analysis
 1. Get comparable properties: `WebSocket ws://localhost:8003/mcp`
 2. Calculate valuation: `WebSocket ws://localhost:8003/mcp`
 3. Market analysis: `WebSocket ws://localhost:8003/mcp`
@@ -72,7 +72,7 @@ docker-compose logs postgres            # Database logs
 ## ⚡ Performance Targets
 
 | Service | Response Time | Throughput |
-|---------|---------------|------------|
+| ------- | ------------- | ---------- |
 | RAG     | < 800ms       | 10 req/s   |
 | Parser  | < 30s         | 2 req/s    |
 | FinDB   | < 200ms       | 50 req/s   |
@@ -104,19 +104,19 @@ docker-compose up -d    # Fresh start
 
 ## 📊 Success Indicators
 
-✅ All containers running (`docker-compose ps`)  
-✅ Health endpoints responding (200 OK)  
-✅ Database tables created and populated  
-✅ MCP WebSocket connections successful  
-✅ Document parsing completes without errors  
-✅ Search returns relevant results  
-✅ Financial calculations produce expected values  
+✅ All containers running (`docker-compose ps`)
+✅ Health endpoints responding (200 OK)
+✅ Database tables created and populated
+✅ MCP WebSocket connections successful
+✅ Document parsing completes without errors
+✅ Search returns relevant results
+✅ Financial calculations produce expected values
 
 ## 🎉 Next Steps
 
 Once all tests pass:
 1. **Build Web MCP Server** - Search & scraping capabilities
-2. **Add Calculator MCP Server** - Advanced financial modeling  
+2. **Add Calculator MCP Server** - Advanced financial modeling
 3. **Create Report Lambda** - PDF generation
 4. **Deploy LangGraph Orchestrator** - Multi-agent coordination
 5. **Update Infrastructure** - Production deployment

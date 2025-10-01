@@ -39,7 +39,7 @@ Set-Location services/mcp_servers/rag
 poetry install
 Set-Location ../../..
 
-# Parser Server  
+# Parser Server
 Write-Host "Setting up Parser MCP Server..." -ForegroundColor Cyan
 Set-Location services/mcp_servers/parser
 poetry install

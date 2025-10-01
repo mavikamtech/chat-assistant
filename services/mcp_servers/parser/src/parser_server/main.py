@@ -17,7 +17,7 @@ from mavik_common.models import (
     ParserRequest, ParserResponse, ParserUploadRequest, ParserUploadResponse,
     MCPRequest, MCPResponse, ParsedDocument
 )
-from mavik_common.errors import ValidationError, DocumentProcessingError
+from mavik_common.errors import ValidationError, DocumentProcessingError, format_error_response
 from mavik_config.settings import get_settings
 from mavik_aws_clients import TextractClient, S3Client
 
@@ -56,23 +56,23 @@ document_parser: Optional[DocumentParser] = None
 async def initialize_services():
     """Initialize AWS clients and document parser."""
     global textract_client, s3_client, document_parser
-    
+
     try:
         logger.info("Initializing Parser MCP services...")
-        
+
         # Initialize AWS clients
         textract_client = TextractClient()
         s3_client = S3Client()
-        
+
         # Initialize document parser
         document_parser = DocumentParser(
             textract_client=textract_client,
             s3_client=s3_client,
             use_local_fallback=True,
         )
-        
+
         logger.info("Parser MCP services initialized successfully")
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize services: {e}")
         raise
@@ -100,14 +100,14 @@ async def health_check():
             "timestamp": datetime.utcnow().isoformat(),
             "version": "1.0.0",
         }
-        
+
         # Check service capabilities if available
         if document_parser:
             parser_health = await document_parser.health_check()
             health_status["capabilities"] = parser_health
-        
+
         return health_status
-        
+
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         return JSONResponse(
@@ -128,20 +128,23 @@ async def upload_document(
     extract_tables: bool = True,
     extract_forms: bool = True,
     extract_signatures: bool = False,
+    s3_upload: bool = False,
+    s3_bucket: Optional[str] = None,
+    s3_prefix: str = "uploads/",
 ):
     """Upload and parse document via HTTP."""
-    
+
     if not document_parser:
         raise HTTPException(status_code=503, detail="Parser service not available")
-    
+
     # Generate document ID if not provided
     if not document_id:
         document_id = f"upload_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-    
+
     # Validate file format
     if not DocumentFormatDetector.is_supported(file.filename):
         raise HTTPException(status_code=400, detail=f"Unsupported file format: {file.filename}")
-    
+
     # Save uploaded file temporarily
     temp_file = None
     try:
@@ -149,11 +152,11 @@ async def upload_document(
         file_suffix = Path(file.filename).suffix
         with tempfile.NamedTemporaryFile(suffix=file_suffix, delete=False) as temp:
             temp_file = temp.name
-            
+
             # Copy uploaded content
             content = await file.read()
             temp.write(content)
-        
+
         # Parse document
         parsed_doc = await document_parser.parse_document(
             document_source=temp_file,
@@ -164,20 +167,50 @@ async def upload_document(
                 "extract_signatures": extract_signatures,
             }
         )
-        
+
+        # Optionally upload to S3 and include location
+        uploaded_s3_uri: Optional[str] = None
+        if s3_upload:
+            if not s3_client:
+                raise HTTPException(status_code=503, detail="S3 client not available for upload")
+            try:
+                bucket = s3_bucket or settings.s3_bucket_documents
+                ext = Path(file.filename).suffix
+                # ensure prefix formatting
+                prefix = s3_prefix.strip("/")
+                key = f"{prefix}/{document_id}{ext}" if prefix else f"{document_id}{ext}"
+                logger.info(f"Uploading parsed upload to s3://{bucket}/{key}")
+                await s3_client.upload_file(
+                    file_path=temp_file,
+                    bucket_name=bucket,
+                    s3_key=key,
+                    metadata={"ContentType": file.content_type or "application/octet-stream"}
+                )
+                uploaded_s3_uri = f"s3://{bucket}/{key}"
+            except Exception as e:
+                logger.error(f"S3 upload failed for {document_id}: {e}")
+                err_payload = format_error_response(e)
+                return JSONResponse(status_code=502, content=err_payload)
+
         return {
             "document_id": document_id,
             "filename": file.filename,
             "parsed_document": parsed_doc.dict(),
             "processing_time": datetime.utcnow().isoformat(),
+            "success": True,
+            "s3_uri": uploaded_s3_uri,
         }
-        
+
     except Exception as e:
-        logger.error(f"Document upload parsing failed: {e}")
+        logger.error(f"Document upload parsing failed: {type(e).__name__}: {e}")
         if isinstance(e, (ValidationError, DocumentProcessingError)):
-            raise HTTPException(status_code=400, detail=str(e))
-        raise HTTPException(status_code=500, detail=f"Parsing failed: {e}")
-        
+            # Return structured error
+            err_payload = format_error_response(e)
+            return JSONResponse(status_code=400, content=err_payload)
+        # Unknown error
+        err_payload = format_error_response(e)
+        return JSONResponse(status_code=500, content=err_payload)
+
     finally:
         # Clean up temporary file
         if temp_file:
@@ -192,7 +225,7 @@ async def websocket_endpoint(websocket: WebSocket):
     """Main MCP WebSocket endpoint."""
     await websocket.accept()
     logger.info("Parser MCP WebSocket connection established")
-    
+
     try:
         while True:
             # Receive MCP request
@@ -201,7 +234,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     websocket.receive_text(),
                     timeout=settings.parser_timeout_seconds
                 )
-                
+
                 # Parse MCP request
                 try:
                     request_data = json.loads(data)
@@ -216,13 +249,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     )
                     await websocket.send_text(error_response.json())
                     continue
-                
+
                 # Process MCP request
                 response = await process_mcp_request(mcp_request)
-                
+
                 # Send response
                 await websocket.send_text(response.json())
-                
+
             except asyncio.TimeoutError:
                 logger.warning("WebSocket timeout waiting for request")
                 error_response = MCPResponse(
@@ -234,7 +267,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 )
                 await websocket.send_text(error_response.json())
                 break
-                
+
     except WebSocketDisconnect:
         logger.info("Parser MCP WebSocket disconnected")
     except Exception as e:
@@ -254,10 +287,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
 async def process_mcp_request(request: MCPRequest) -> MCPResponse:
     """Process incoming MCP request and return response."""
-    
+
     try:
         logger.info(f"Processing MCP request: {request.method}")
-        
+
         # Route request to appropriate handler
         if request.method == "parser/parse_document":
             return await handle_parse_request(request)
@@ -275,7 +308,7 @@ async def process_mcp_request(request: MCPRequest) -> MCPResponse:
                     "message": f"Unknown method: {request.method}",
                 }
             )
-            
+
     except Exception as e:
         logger.error(f"Error processing MCP request {request.id}: {e}")
         return MCPResponse(
@@ -289,7 +322,7 @@ async def process_mcp_request(request: MCPRequest) -> MCPResponse:
 
 async def handle_parse_request(request: MCPRequest) -> MCPResponse:
     """Handle document parsing request."""
-    
+
     if not document_parser:
         return MCPResponse(
             id=request.id,
@@ -298,30 +331,30 @@ async def handle_parse_request(request: MCPRequest) -> MCPResponse:
                 "message": "Document parser service not available",
             }
         )
-    
+
     try:
         # Parse request
         parse_request = ParserRequest(**request.params)
-        
+
         # Parse document
         parsed_doc = await document_parser.parse_document(
             document_source=parse_request.document_source,
             document_id=parse_request.document_id,
             parser_options=parse_request.options,
         )
-        
+
         # Create response
         response = ParserResponse(
             document_id=parse_request.document_id,
             parsed_document=parsed_doc,
             processing_timestamp=datetime.utcnow(),
         )
-        
+
         return MCPResponse(
             id=request.id,
             result=response.dict(),
         )
-        
+
     except ValidationError as e:
         return MCPResponse(
             id=request.id,
@@ -342,7 +375,7 @@ async def handle_parse_request(request: MCPRequest) -> MCPResponse:
 
 async def handle_upload_request(request: MCPRequest) -> MCPResponse:
     """Handle document upload and parsing request."""
-    
+
     if not document_parser or not s3_client:
         return MCPResponse(
             id=request.id,
@@ -351,18 +384,18 @@ async def handle_upload_request(request: MCPRequest) -> MCPResponse:
                 "message": "Document parser or S3 service not available",
             }
         )
-    
+
     try:
         # Parse upload request
         upload_request = ParserUploadRequest(**request.params)
-        
+
         # Download file from S3 to temporary location
         with tempfile.NamedTemporaryFile(
-            suffix=Path(upload_request.filename).suffix, 
+            suffix=Path(upload_request.filename).suffix,
             delete=False
         ) as temp_file:
             temp_path = temp_file.name
-        
+
         try:
             # Download from S3
             await s3_client.download_file(
@@ -370,14 +403,14 @@ async def handle_upload_request(request: MCPRequest) -> MCPResponse:
                 key=upload_request.s3_key,
                 filename=temp_path,
             )
-            
+
             # Parse document
             parsed_doc = await document_parser.parse_document(
                 document_source=temp_path,
                 document_id=upload_request.document_id,
                 parser_options=upload_request.options,
             )
-            
+
             # Create response
             response = ParserUploadResponse(
                 document_id=upload_request.document_id,
@@ -386,19 +419,19 @@ async def handle_upload_request(request: MCPRequest) -> MCPResponse:
                 s3_location=f"s3://{upload_request.s3_bucket}/{upload_request.s3_key}",
                 processing_timestamp=datetime.utcnow(),
             )
-            
+
             return MCPResponse(
                 id=request.id,
                 result=response.dict(),
             )
-            
+
         finally:
             # Clean up temporary file
             try:
                 Path(temp_path).unlink()
             except:
                 pass
-        
+
     except ValidationError as e:
         return MCPResponse(
             id=request.id,
@@ -419,7 +452,7 @@ async def handle_upload_request(request: MCPRequest) -> MCPResponse:
 
 async def handle_capabilities_request(request: MCPRequest) -> MCPResponse:
     """Handle capabilities inquiry request."""
-    
+
     if not document_parser:
         return MCPResponse(
             id=request.id,
@@ -428,10 +461,10 @@ async def handle_capabilities_request(request: MCPRequest) -> MCPResponse:
                 "message": "Document parser service not available",
             }
         )
-    
+
     try:
         capabilities = await document_parser.health_check()
-        
+
         return MCPResponse(
             id=request.id,
             result={
@@ -443,7 +476,7 @@ async def handle_capabilities_request(request: MCPRequest) -> MCPResponse:
                 }
             },
         )
-        
+
     except Exception as e:
         return MCPResponse(
             id=request.id,
@@ -456,7 +489,7 @@ async def handle_capabilities_request(request: MCPRequest) -> MCPResponse:
 
 def handle_list_tools_request(request: MCPRequest) -> MCPResponse:
     """Handle list tools request."""
-    
+
     tools = [
         {
             "name": "parser_parse_document",
@@ -536,7 +569,7 @@ def handle_list_tools_request(request: MCPRequest) -> MCPResponse:
             }
         }
     ]
-    
+
     return MCPResponse(
         id=request.id,
         result={"tools": tools},
@@ -545,7 +578,7 @@ def handle_list_tools_request(request: MCPRequest) -> MCPResponse:
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Run server
     uvicorn.run(
         "parser_server.main:app",

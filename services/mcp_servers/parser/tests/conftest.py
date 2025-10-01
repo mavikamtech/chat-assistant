@@ -30,42 +30,42 @@ def sample_offering_memorandum_text():
     return """
     PRIVATE & CONFIDENTIAL
     OFFERING MEMORANDUM
-    
+
     $50,000,000
     300 HILLSBOROUGH STREET
     RALEIGH, NORTH CAROLINA
-    
+
     INVESTMENT OPPORTUNITY
-    
+
     EXECUTIVE SUMMARY
-    
+
     Property Overview
-    300 Hillsborough Street is a Class A office building located in downtown Raleigh, 
-    North Carolina. The 12-story building contains approximately 150,000 square feet 
+    300 Hillsborough Street is a Class A office building located in downtown Raleigh,
+    North Carolina. The 12-story building contains approximately 150,000 square feet
     of rentable space and was constructed in 1985 with major renovations completed in 2022.
-    
+
     Investment Highlights
     • Prime downtown location with excellent accessibility
-    • High-quality tenant roster with strong credit profiles  
+    • High-quality tenant roster with strong credit profiles
     • Recent capital improvements including HVAC and elevator modernization
     • Below-market rents providing upside potential
     • Strong cash flow with projected 4% annual NOI growth
-    
+
     Financial Summary
     Purchase Price: $50,000,000
     Price per SF: $333
     Going-In Cap Rate: 6.4%
     Year 1 Cash-on-Cash: 8.2%
     5-Year IRR: 12.8%
-    
+
     PROPERTY DETAILS
-    
+
     Location & Access
-    The subject property is strategically positioned at the intersection of 
-    Hillsborough Street and Fifth Avenue in downtown Raleigh. The location 
-    provides excellent access to public transportation, major highways, and 
+    The subject property is strategically positioned at the intersection of
+    Hillsborough Street and Fifth Avenue in downtown Raleigh. The location
+    provides excellent access to public transportation, major highways, and
     the central business district.
-    
+
     Building Specifications
     Year Built: 1985
     Renovation: 2022
@@ -74,102 +74,102 @@ def sample_offering_memorandum_text():
     Parking Ratio: 1.33/1,000 SF
     Elevators: 3 passenger elevators
     HVAC: Central system with zone controls
-    
+
     TENANT PROFILE
-    
+
     Major Tenants:
-    
+
     Tenant Name           | Floor(s) | SF     | Lease Exp | Credit
     ---------------------|----------|--------|-----------|--------
     DataTech Solutions   | 8-10     | 25,000 | Dec 2029  | BBB+
     Morrison & Associates| 5-6      | 18,000 | Jun 2027  | A-
     Regional Bank        | 1        | 8,000  | Mar 2031  | AA-
     Various Small Tenants| Multiple | 60,000 | Various   | B+ Avg
-    
+
     Occupancy: 92%
     WALT: 7.2 years
     Average Credit: BBB+
-    
+
     MARKET ANALYSIS
-    
+
     Submarket Performance
     The downtown Raleigh office market has demonstrated resilience with:
     • Class A average rent: $28.50/SF (subject at $26.75/SF)
     • Market vacancy: 12.3% (subject at 8.0%)
     • Average cap rates: 6.8% (subject at 6.4%)
-    
+
     Comparable Sales
     Recent transactions in the submarket:
     • 123 Main Street: $340/SF, 6.2% cap rate
-    • 456 Capital Blvd: $285/SF, 7.1% cap rate  
+    • 456 Capital Blvd: $285/SF, 7.1% cap rate
     • 789 Business Way: $315/SF, 6.5% cap rate
-    
+
     FINANCIAL PROJECTIONS
-    
+
     Operating Performance (Year 1)
     Gross Rental Income: $4,012,500
     Less: Vacancy @ 5%: $(200,625)
     Effective Gross Income: $3,811,875
     Less: Operating Expenses: $(811,875)
     Net Operating Income: $3,000,000
-    
+
     5-Year Projections
     Year 1 NOI: $3,000,000
     Year 2 NOI: $3,120,000 (4.0% growth)
     Year 3 NOI: $3,244,800 (4.0% growth)
-    Year 4 NOI: $3,374,592 (4.0% growth)  
+    Year 4 NOI: $3,374,592 (4.0% growth)
     Year 5 NOI: $3,509,576 (4.0% growth)
-    
+
     INVESTMENT ANALYSIS
-    
+
     Capitalization Structure
     Total Investment: $50,000,000
     Equity (25%): $12,500,000
     Debt (75%): $37,500,000
     Interest Rate: 5.5%
     Amortization: 25 years
-    
+
     Cash Flow Analysis
     Year 1 Cash Flow: $656,000
     Year 2 Cash Flow: $724,800
     Year 3 Cash Flow: $797,952
     Year 4 Cash Flow: $875,669
     Year 5 Cash Flow: $958,296
-    
+
     Returns Summary
     Cash-on-Cash Return (Year 1): 8.2%
     5-Year IRR: 12.8%
     5-Year Equity Multiple: 1.67x
-    
+
     RISK CONSIDERATIONS
-    
+
     Key Risk Factors:
     • Interest rate sensitivity on refinancing
     • Tenant concentration (top 3 = 55% of income)
     • Capital expenditure requirements
     • Market competition for tenants
     • Economic conditions affecting occupancy
-    
+
     Mitigation Strategies:
     • Diversified tenant base across industries
     • Conservative leverage at 75% LTV
     • Recent renovations reduce near-term capex
     • Strong market fundamentals in Raleigh
     • Professional property management
-    
+
     CONCLUSION
-    
-    300 Hillsborough Street presents a compelling investment opportunity 
-    combining stable cash flows, quality tenants, and value-add potential 
-    through rent optimization. The property's prime location and recent 
+
+    300 Hillsborough Street presents a compelling investment opportunity
+    combining stable cash flows, quality tenants, and value-add potential
+    through rent optimization. The property's prime location and recent
     improvements position it well for continued strong performance.
-    
-    The projected returns of 8.2% cash-on-cash and 12.8% IRR reflect 
+
+    The projected returns of 8.2% cash-on-cash and 12.8% IRR reflect
     the quality of the asset and strength of the Raleigh office market.
-    
+
     CONFIDENTIALITY NOTICE
-    This offering memorandum contains confidential and proprietary 
-    information. Any reproduction or distribution without written 
+    This offering memorandum contains confidential and proprietary
+    information. Any reproduction or distribution without written
     consent is strictly prohibited.
     """
 
@@ -204,10 +204,10 @@ def sample_textract_blocks():
                 {"Type": "CHILD", "Ids": ["word_001", "word_002"]}
             ]
         },
-        # Property name line  
+        # Property name line
         {
             "Id": "line_002",
-            "BlockType": "LINE", 
+            "BlockType": "LINE",
             "Text": "300 HILLSBOROUGH STREET",
             "Confidence": 98.5,
             "Page": 1,
@@ -241,7 +241,7 @@ def sample_textract_blocks():
             "Page": 1
         },
         {
-            "Id": "word_002", 
+            "Id": "word_002",
             "BlockType": "WORD",
             "Text": "MEMORANDUM",
             "Confidence": 99.7,
@@ -249,7 +249,7 @@ def sample_textract_blocks():
         },
         {
             "Id": "word_003",
-            "BlockType": "WORD", 
+            "BlockType": "WORD",
             "Text": "300",
             "Confidence": 98.8,
             "Page": 1
@@ -257,7 +257,7 @@ def sample_textract_blocks():
         {
             "Id": "word_004",
             "BlockType": "WORD",
-            "Text": "HILLSBOROUGH", 
+            "Text": "HILLSBOROUGH",
             "Confidence": 98.2,
             "Page": 1
         },
@@ -266,7 +266,7 @@ def sample_textract_blocks():
             "BlockType": "WORD",
             "Text": "STREET",
             "Confidence": 98.5,
-            "Page": 1  
+            "Page": 1
         },
         {
             "Id": "word_006",
@@ -278,7 +278,7 @@ def sample_textract_blocks():
         # Table block
         {
             "Id": "table_001",
-            "BlockType": "TABLE", 
+            "BlockType": "TABLE",
             "Confidence": 95.5,
             "Page": 1,
             "Geometry": {
@@ -304,7 +304,7 @@ def sample_textract_blocks():
             "Relationships": [{"Type": "CHILD", "Ids": ["word_007"]}]
         },
         {
-            "Id": "cell_002", 
+            "Id": "cell_002",
             "BlockType": "CELL",
             "RowIndex": 0,
             "ColumnIndex": 1,
@@ -316,19 +316,19 @@ def sample_textract_blocks():
         },
         {
             "Id": "cell_003",
-            "BlockType": "CELL", 
+            "BlockType": "CELL",
             "RowIndex": 0,
             "ColumnIndex": 2,
             "RowSpan": 1,
             "ColumnSpan": 1,
             "Confidence": 96.2,
-            "EntityTypes": ["COLUMN_HEADER"], 
+            "EntityTypes": ["COLUMN_HEADER"],
             "Relationships": [{"Type": "CHILD", "Ids": ["word_009"]}]
         },
         {
             "Id": "cell_004",
             "BlockType": "CELL",
-            "RowIndex": 0, 
+            "RowIndex": 0,
             "ColumnIndex": 3,
             "RowSpan": 1,
             "ColumnSpan": 1,
@@ -342,7 +342,7 @@ def sample_textract_blocks():
             "BlockType": "CELL",
             "RowIndex": 1,
             "ColumnIndex": 0,
-            "RowSpan": 1, 
+            "RowSpan": 1,
             "ColumnSpan": 1,
             "Confidence": 97.1,
             "Relationships": [{"Type": "CHILD", "Ids": ["word_011", "word_012"]}]
@@ -353,7 +353,7 @@ def sample_textract_blocks():
             "RowIndex": 1,
             "ColumnIndex": 1,
             "RowSpan": 1,
-            "ColumnSpan": 1, 
+            "ColumnSpan": 1,
             "Confidence": 96.8,
             "Relationships": [{"Type": "CHILD", "Ids": ["word_013"]}]
         },
@@ -371,7 +371,7 @@ def sample_textract_blocks():
             "Id": "cell_008",
             "BlockType": "CELL",
             "RowIndex": 1,
-            "ColumnIndex": 3, 
+            "ColumnIndex": 3,
             "RowSpan": 1,
             "ColumnSpan": 1,
             "Confidence": 96.9,
@@ -386,7 +386,7 @@ def sample_textract_blocks():
         },
         {
             "Id": "word_008",
-            "BlockType": "WORD", 
+            "BlockType": "WORD",
             "Text": "SF",
             "Confidence": 95.8
         },
@@ -397,7 +397,7 @@ def sample_textract_blocks():
             "Confidence": 96.2
         },
         {
-            "Id": "word_010", 
+            "Id": "word_010",
             "BlockType": "WORD",
             "Text": "Credit",
             "Confidence": 95.5
@@ -405,7 +405,7 @@ def sample_textract_blocks():
         {
             "Id": "word_011",
             "BlockType": "WORD",
-            "Text": "DataTech", 
+            "Text": "DataTech",
             "Confidence": 97.1
         },
         {
@@ -422,7 +422,7 @@ def sample_textract_blocks():
         },
         {
             "Id": "word_014",
-            "BlockType": "WORD", 
+            "BlockType": "WORD",
             "Text": "2029",
             "Confidence": 97.3
         },
@@ -445,7 +445,7 @@ def sample_textract_blocks():
             ]
         },
         {
-            "Id": "kv_value_001", 
+            "Id": "kv_value_001",
             "BlockType": "KEY_VALUE_SET",
             "EntityTypes": ["VALUE"],
             "Confidence": 95.2,
@@ -456,7 +456,7 @@ def sample_textract_blocks():
         },
         {
             "Id": "word_016",
-            "BlockType": "WORD", 
+            "BlockType": "WORD",
             "Text": "Purchase",
             "Confidence": 94.8
         },
@@ -469,7 +469,7 @@ def sample_textract_blocks():
         {
             "Id": "word_018",
             "BlockType": "WORD",
-            "Text": "$50,000,000", 
+            "Text": "$50,000,000",
             "Confidence": 95.2
         }
     ]
@@ -484,7 +484,7 @@ def mock_multipage_textract_response():
             # Page 1
             {
                 "Id": "page_1",
-                "BlockType": "PAGE", 
+                "BlockType": "PAGE",
                 "Page": 1,
                 "Relationships": [{"Type": "CHILD", "Ids": ["line_p1_1"]}]
             },
@@ -497,13 +497,13 @@ def mock_multipage_textract_response():
                 "Relationships": [{"Type": "CHILD", "Ids": ["word_p1_1"]}]
             },
             {
-                "Id": "word_p1_1", 
+                "Id": "word_p1_1",
                 "BlockType": "WORD",
                 "Text": "Content",
                 "Confidence": 99.0,
                 "Page": 1
             },
-            # Page 2  
+            # Page 2
             {
                 "Id": "page_2",
                 "BlockType": "PAGE",
@@ -513,7 +513,7 @@ def mock_multipage_textract_response():
             {
                 "Id": "line_p2_1",
                 "BlockType": "LINE",
-                "Text": "Page 2 Content", 
+                "Text": "Page 2 Content",
                 "Confidence": 98.5,
                 "Page": 2,
                 "Relationships": [{"Type": "CHILD", "Ids": ["word_p2_1"]}]
@@ -522,7 +522,7 @@ def mock_multipage_textract_response():
                 "Id": "word_p2_1",
                 "BlockType": "WORD",
                 "Text": "Content",
-                "Confidence": 98.5, 
+                "Confidence": 98.5,
                 "Page": 2
             }
         ]
@@ -538,7 +538,7 @@ def mock_s3_document_metadata():
         "LastModified": datetime(2024, 1, 15, 10, 30, 0),
         "Metadata": {
             "document-type": "offering-memorandum",
-            "deal-id": "hillsborough-300", 
+            "deal-id": "hillsborough-300",
             "confidentiality": "private"
         }
     }
@@ -548,7 +548,7 @@ def mock_s3_document_metadata():
 def mock_parser_request():
     """Mock parser request for testing."""
     from mavik_common.models import ParserRequest
-    
+
     return ParserRequest(
         document_source="s3://mavik-docs/deals/300-hillsborough-om.pdf",
         document_id="hillsborough_300_om",
@@ -560,14 +560,14 @@ def mock_parser_request():
     )
 
 
-@pytest.fixture  
+@pytest.fixture
 def mock_parser_upload_request():
     """Mock parser upload request for testing."""
     from mavik_common.models import ParserUploadRequest
-    
+
     return ParserUploadRequest(
         s3_bucket="mavik-documents",
-        s3_key="uploads/temp/document.pdf", 
+        s3_key="uploads/temp/document.pdf",
         document_id="temp_upload_123",
         filename="investment-memo.pdf",
         options={
@@ -581,11 +581,11 @@ def mock_parser_upload_request():
 def expected_parsed_document():
     """Expected parsed document structure for testing."""
     from mavik_common.models import (
-        ParsedDocument, DocumentMetadata, DocumentPage, 
+        ParsedDocument, DocumentMetadata, DocumentPage,
         DocumentElement, BoundingBox
     )
     from datetime import datetime
-    
+
     return ParsedDocument(
         metadata=DocumentMetadata(
             document_id="test_document",
@@ -602,7 +602,7 @@ def expected_parsed_document():
                 elements=[
                     DocumentElement(
                         element_type="line",
-                        text="OFFERING MEMORANDUM", 
+                        text="OFFERING MEMORANDUM",
                         bounding_box=BoundingBox(
                             left=0.2, top=0.1, width=0.6, height=0.04
                         ),

@@ -38,7 +38,7 @@ cd services/mcp_servers/rag
 poetry install
 cd ../../..
 
-# Parser Server  
+# Parser Server
 echo "Setting up Parser MCP Server..."
 cd services/mcp_servers/parser
 poetry install

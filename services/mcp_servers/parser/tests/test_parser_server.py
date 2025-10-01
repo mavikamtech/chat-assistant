@@ -278,11 +278,11 @@ endobj
 
 xref
 0 5
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000189 00000 n 
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000189 00000 n
 trailer
 <<
 /Size 5
@@ -295,56 +295,56 @@ startxref
 
 class TestDocumentFormatDetector:
     """Test document format detection."""
-    
+
     def test_detect_pdf_format(self, tmp_path):
         """Test PDF format detection."""
         # Create test PDF file
         pdf_file = tmp_path / "test.pdf"
         pdf_file.write_bytes(b"%PDF-1.4\nTest content")
-        
+
         format_type = DocumentFormatDetector.detect_format(str(pdf_file))
         assert format_type == "pdf"
-    
+
     def test_detect_image_format(self, tmp_path):
         """Test image format detection."""
         # Create test image file with PNG magic bytes
         img_file = tmp_path / "test.png"
         img_file.write_bytes(b"\x89PNG\r\n\x1a\n" + b"fake image data")
-        
+
         format_type = DocumentFormatDetector.detect_format(str(img_file))
         assert format_type == "image"
-    
+
     def test_detect_text_format(self, tmp_path):
         """Test text format detection."""
         text_file = tmp_path / "test.txt"
         text_file.write_text("Test text content")
-        
+
         format_type = DocumentFormatDetector.detect_format(str(text_file))
         assert format_type == "text"
-    
+
     def test_unsupported_format(self, tmp_path):
         """Test unsupported format handling."""
         unsupported_file = tmp_path / "test.xyz"
         unsupported_file.write_text("Some content")
-        
+
         with pytest.raises(ValidationError, match="Unsupported file extension"):
             DocumentFormatDetector.detect_format(str(unsupported_file))
-    
+
     def test_invalid_pdf_content(self, tmp_path):
         """Test invalid PDF content detection."""
         fake_pdf = tmp_path / "fake.pdf"
         fake_pdf.write_bytes(b"Not a real PDF file")
-        
+
         with pytest.raises(ValidationError, match="File does not appear to be a valid PDF"):
             DocumentFormatDetector.detect_format(str(fake_pdf))
-    
+
     def test_is_supported(self, tmp_path):
         """Test format support checking."""
         # Supported format
         pdf_file = tmp_path / "test.pdf"
         pdf_file.write_bytes(b"%PDF-1.4\nContent")
         assert DocumentFormatDetector.is_supported(str(pdf_file)) is True
-        
+
         # Unsupported format
         bad_file = tmp_path / "test.bad"
         bad_file.write_text("Content")
@@ -353,15 +353,15 @@ class TestDocumentFormatDetector:
 
 class TestTextractParser:
     """Test Textract parsing functionality."""
-    
+
     @pytest.mark.asyncio
     async def test_parse_document_sync(self, mock_textract_client, sample_textract_response):
         """Test synchronous document parsing."""
         # Setup mock response
         mock_textract_client.analyze_document.return_value = sample_textract_response
-        
+
         parser = TextractParser(mock_textract_client)
-        
+
         # Parse document (no advanced features)
         result = await parser.parse_document(
             s3_bucket="test-bucket",
@@ -370,7 +370,7 @@ class TestTextractParser:
             extract_tables=False,
             extract_forms=False,
         )
-        
+
         # Verify result
         assert isinstance(result, ParsedDocument)
         assert result.metadata.document_id == "test_doc"
@@ -378,26 +378,26 @@ class TestTextractParser:
         assert len(result.pages[0].elements) == 2  # Two lines
         assert result.pages[0].elements[0].text == "OFFERING MEMORANDUM"
         assert result.pages[0].elements[1].text == "300 Hillsborough Street"
-        
+
         # Verify Textract was called correctly
         mock_textract_client.analyze_document.assert_called_once_with(
             s3_bucket="test-bucket",
             s3_key="test-doc.pdf"
         )
-    
+
     @pytest.mark.asyncio
     async def test_parse_document_async(self, mock_textract_client, sample_textract_response):
         """Test asynchronous document parsing with advanced features."""
         # Setup mock responses
         mock_textract_client.start_document_analysis.return_value = {"JobId": "job123"}
-        
+
         # Mock successful job completion
         completed_response = sample_textract_response.copy()
         completed_response["JobStatus"] = "SUCCEEDED"
         mock_textract_client.get_document_analysis.return_value = completed_response
-        
+
         parser = TextractParser(mock_textract_client)
-        
+
         # Parse document with advanced features
         result = await parser.parse_document(
             s3_bucket="test-bucket",
@@ -406,52 +406,52 @@ class TestTextractParser:
             extract_tables=True,
             extract_forms=True,
         )
-        
+
         # Verify result
         assert isinstance(result, ParsedDocument)
         assert len(result.tables) == 1  # One table in sample response
         assert len(result.tables[0].rows) == 2  # Two rows in table
         assert result.tables[0].rows[0] == ["Property", "Value"]  # Header row
         assert result.tables[0].rows[1] == ["Building", "$50M"]   # Data row
-        
+
         # Verify async workflow was used
         mock_textract_client.start_document_analysis.assert_called_once()
         mock_textract_client.get_document_analysis.assert_called_once_with("job123")
-    
+
     @pytest.mark.asyncio
     async def test_table_processing(self, mock_textract_client, sample_textract_response):
         """Test table extraction and processing."""
         mock_textract_client.analyze_document.return_value = sample_textract_response
-        
+
         parser = TextractParser(mock_textract_client)
         result = await parser.parse_document(
             s3_bucket="test-bucket",
             s3_key="test-doc.pdf",
             document_id="test_doc",
         )
-        
+
         # Verify table structure
         assert len(result.tables) == 1
         table = result.tables[0]
-        
+
         assert table.table_id == "table_1"
         assert len(table.rows) == 2
         assert table.rows[0] == ["Property", "Value"]  # Headers
         assert table.rows[1] == ["Building", "$50M"]   # Data
         assert table.confidence == 95.0
-    
+
     @pytest.mark.asyncio
     async def test_bounding_box_extraction(self, mock_textract_client, sample_textract_response):
         """Test bounding box extraction from geometry."""
         mock_textract_client.analyze_document.return_value = sample_textract_response
-        
+
         parser = TextractParser(mock_textract_client)
         result = await parser.parse_document(
             s3_bucket="test-bucket",
             s3_key="test-doc.pdf",
             document_id="test_doc",
         )
-        
+
         # Check line bounding boxes
         line1 = result.pages[0].elements[0]
         assert line1.bounding_box is not None
@@ -459,7 +459,7 @@ class TestTextractParser:
         assert line1.bounding_box.top == 0.1
         assert line1.bounding_box.width == 0.8
         assert line1.bounding_box.height == 0.05
-    
+
     @pytest.mark.asyncio
     async def test_job_failure_handling(self, mock_textract_client):
         """Test handling of failed Textract jobs."""
@@ -469,9 +469,9 @@ class TestTextractParser:
             "JobStatus": "FAILED",
             "StatusMessage": "Processing failed due to invalid document"
         }
-        
+
         parser = TextractParser(mock_textract_client)
-        
+
         with pytest.raises(DocumentProcessingError, match="Textract job failed"):
             await parser.parse_document(
                 s3_bucket="test-bucket",
@@ -483,28 +483,28 @@ class TestTextractParser:
 
 class TestLocalPDFParser:
     """Test local PDF parsing functionality."""
-    
+
     @pytest.mark.asyncio
     async def test_parse_simple_pdf(self, tmp_path, sample_pdf_content):
         """Test parsing a simple PDF."""
         # Create test PDF file
         pdf_file = tmp_path / "test.pdf"
         pdf_file.write_bytes(sample_pdf_content)
-        
+
         parser = LocalPDFParser()
-        
+
         # Mock PyPDF2 to avoid dependency on actual PDF parsing
         with patch('parser_server.document_parser.PyPDF2.PdfReader') as mock_reader:
             # Mock page with text
             mock_page = Mock()
             mock_page.extract_text.return_value = "Test PDF Content\nSecond line of text"
-            
+
             mock_pdf = Mock()
             mock_pdf.pages = [mock_page]
             mock_reader.return_value = mock_pdf
-            
+
             result = await parser.parse_pdf(str(pdf_file), "test_pdf")
-        
+
         # Verify result
         assert isinstance(result, ParsedDocument)
         assert result.metadata.document_id == "test_pdf"
@@ -513,26 +513,26 @@ class TestLocalPDFParser:
         assert len(result.pages[0].elements) == 1
         assert result.pages[0].elements[0].text == "Test PDF Content\nSecond line of text"
         assert result.full_text == "Test PDF Content\nSecond line of text"
-    
+
     @pytest.mark.asyncio
     async def test_parse_pdf_with_extraction_error(self, tmp_path, sample_pdf_content):
         """Test handling of PDF extraction errors."""
         pdf_file = tmp_path / "test.pdf"
         pdf_file.write_bytes(sample_pdf_content)
-        
+
         parser = LocalPDFParser()
-        
+
         with patch('parser_server.document_parser.PyPDF2.PdfReader') as mock_reader:
             # Mock page that raises exception
             mock_page = Mock()
             mock_page.extract_text.side_effect = Exception("Extraction failed")
-            
+
             mock_pdf = Mock()
             mock_pdf.pages = [mock_page]
             mock_reader.return_value = mock_pdf
-            
+
             result = await parser.parse_pdf(str(pdf_file), "test_pdf")
-        
+
         # Should create empty page on extraction error
         assert len(result.pages) == 1
         assert len(result.pages[0].elements) == 0
@@ -540,7 +540,7 @@ class TestLocalPDFParser:
 
 class TestDocumentParser:
     """Test main document parser orchestration."""
-    
+
     @pytest.mark.asyncio
     async def test_parse_s3_document_with_textract(self, mock_textract_client, mock_s3_client):
         """Test parsing S3 document with Textract."""
@@ -570,7 +570,7 @@ class TestDocumentParser:
                 }
             ]
         }
-        
+
         # Create parser with Textract
         textract_parser = TextractParser(mock_textract_client)
         textract_parser.parse_document = AsyncMock(return_value=ParsedDocument(
@@ -588,24 +588,24 @@ class TestDocumentParser:
             forms=[],
             full_text="S3 Document Content"
         ))
-        
+
         parser = DocumentParser(
             textract_client=mock_textract_client,
             s3_client=mock_s3_client,
         )
         parser.textract_parser = textract_parser
-        
+
         # Parse S3 document
         result = await parser.parse_document(
             document_source="s3://test-bucket/test-doc.pdf",
             document_id="s3_test",
         )
-        
+
         # Verify result
         assert isinstance(result, ParsedDocument)
         assert result.metadata.document_id == "s3_test"
         assert result.full_text == "S3 Document Content"
-        
+
         # Verify Textract parser was called
         textract_parser.parse_document.assert_called_once_with(
             s3_bucket="test-bucket",
@@ -615,16 +615,16 @@ class TestDocumentParser:
             extract_forms=True,
             extract_signatures=False,
         )
-    
+
     @pytest.mark.asyncio
     async def test_parse_local_pdf(self, tmp_path):
         """Test parsing local PDF file."""
         # Create test PDF
         pdf_file = tmp_path / "local.pdf"
         pdf_file.write_bytes(b"%PDF-1.4\nTest content")
-        
+
         parser = DocumentParser(use_local_fallback=True)
-        
+
         # Mock LocalPDFParser
         with patch.object(parser.pdf_parser, 'parse_pdf') as mock_parse:
             mock_parse.return_value = ParsedDocument(
@@ -642,56 +642,56 @@ class TestDocumentParser:
                 forms=[],
                 full_text="Local PDF Content"
             )
-            
+
             result = await parser.parse_document(
                 document_source=str(pdf_file),
                 document_id="local_test",
             )
-        
+
         # Verify result
         assert isinstance(result, ParsedDocument)
         assert result.metadata.document_id == "local_test"
         assert result.full_text == "Local PDF Content"
-        
+
         # Verify local parser was called
         mock_parse.assert_called_once_with(str(pdf_file), "local_test")
-    
+
     @pytest.mark.asyncio
     async def test_parse_text_file(self, tmp_path):
         """Test parsing plain text file."""
         # Create test text file
         text_file = tmp_path / "test.txt"
         text_file.write_text("This is test content\nWith multiple lines")
-        
+
         parser = DocumentParser()
-        
+
         result = await parser.parse_document(
             document_source=str(text_file),
             document_id="text_test",
         )
-        
+
         # Verify result
         assert isinstance(result, ParsedDocument)
         assert result.metadata.document_id == "text_test"
         assert result.metadata.content_type == "text/plain"
         assert len(result.pages) == 1
         assert result.full_text == "This is test content\nWith multiple lines"
-    
+
     @pytest.mark.asyncio
     async def test_unsupported_format_error(self, tmp_path):
         """Test error handling for unsupported formats."""
         # Create unsupported file
         bad_file = tmp_path / "test.xyz"
         bad_file.write_text("Content")
-        
+
         parser = DocumentParser()
-        
+
         with pytest.raises(ValidationError, match="Unsupported document format"):
             await parser.parse_document(
                 document_source=str(bad_file),
                 document_id="bad_test",
             )
-    
+
     @pytest.mark.asyncio
     async def test_health_check(self, mock_textract_client, mock_s3_client):
         """Test parser health check."""
@@ -699,20 +699,20 @@ class TestDocumentParser:
             textract_client=mock_textract_client,
             s3_client=mock_s3_client,
         )
-        
+
         health = await parser.health_check()
-        
+
         # Verify health response
         assert "parsers" in health
         assert health["parsers"]["textract"] is True
         assert health["parsers"]["local_pdf"] is True
         assert health["parsers"]["local_text"] is True
-        
+
         assert "capabilities" in health
         assert health["capabilities"]["s3_documents"] is True
         assert health["capabilities"]["table_extraction"] is True
         assert health["capabilities"]["form_extraction"] is True
-        
+
         assert "supported_formats" in health
         assert "pdf" in health["supported_formats"]
         assert "image" in health["supported_formats"]
@@ -722,13 +722,13 @@ class TestDocumentParser:
 @pytest.mark.asyncio
 async def test_integration_workflow(mock_textract_client, sample_textract_response):
     """Test complete parsing workflow integration."""
-    
+
     # Setup Textract mock
     mock_textract_client.analyze_document.return_value = sample_textract_response
-    
+
     # Create parser
     parser = DocumentParser(textract_client=mock_textract_client)
-    
+
     # Parse document
     result = await parser.parse_document(
         document_source="s3://test-bucket/integration-doc.pdf",
@@ -738,28 +738,28 @@ async def test_integration_workflow(mock_textract_client, sample_textract_respon
             "extract_forms": False,
         }
     )
-    
+
     # Verify complete workflow
     assert isinstance(result, ParsedDocument)
     assert result.metadata.document_id == "integration_test"
     assert len(result.pages) == 1
     assert len(result.tables) == 1
     assert len(result.forms) == 0  # Forms extraction disabled
-    
+
     # Verify page content
     page = result.pages[0]
     assert len(page.elements) == 2
     assert page.elements[0].text == "OFFERING MEMORANDUM"
     assert page.elements[1].text == "300 Hillsborough Street"
-    
+
     # Verify table content
     table = result.tables[0]
     assert table.table_id == "table_1"
     assert table.rows == [["Property", "Value"], ["Building", "$50M"]]
-    
+
     # Verify full text extraction
     expected_text = "OFFERING MEMORANDUM\n300 Hillsborough Street"
     assert result.full_text == expected_text
-    
+
     # Verify Textract was called correctly
     mock_textract_client.analyze_document.assert_called_once()

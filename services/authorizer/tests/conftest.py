@@ -11,7 +11,7 @@ def mock_environment():
     env_vars = {
         "AWS_REGION": "us-east-1",
         "AZURE_AD_TENANT_ID": "test-tenant-id",
-        "AZURE_AD_CLIENT_ID": "test-client-id", 
+        "AZURE_AD_CLIENT_ID": "test-client-id",
         "AZURE_AD_CLIENT_SECRET": "test-client-secret",
         "JWT_SECRET_KEY": "test-jwt-secret-key-for-testing",
         "JWT_ALGORITHM": "HS256",
@@ -20,12 +20,12 @@ def mock_environment():
         "LOG_LEVEL": "INFO",
         "ENVIRONMENT": "test",
     }
-    
+
     for key, value in env_vars.items():
         os.environ[key] = value
-    
+
     yield
-    
+
     # Cleanup
     for key in env_vars.keys():
         if key in os.environ:

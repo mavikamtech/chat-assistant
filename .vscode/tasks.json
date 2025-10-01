@@ -40,7 +40,16 @@
       "label": "Orchestrator",
       "type": "shell",
       "command": "poetry",
-      "args": ["run", "python", "apps/orchestrator/main.py"],
+      "args": [
+        "run",
+        "uvicorn",
+        "apps.orchestrator.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8080",
+        "--reload"
+      ],
       "group": "build",
       "presentation": {
         "echo": true,
@@ -72,8 +81,8 @@
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": "^.*Starting.*$",
-          "endsPattern": "^.*started.*$"
+          "beginsPattern": "^.*Uvicorn running on.*$",
+          "endsPattern": "^.*Application startup complete.*$"
         }
       }
     },
