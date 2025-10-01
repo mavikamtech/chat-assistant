@@ -204,6 +204,7 @@ omit = [
     "*/migrations/*",
     "*/venv/*",
     "*/node_modules/*",
+    "packages/common/mavik_common/*",
 ]
 
 [tool.coverage.report]
