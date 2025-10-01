@@ -98,22 +98,22 @@ class PropertyValuationHTTPRequest(BaseModel):
 # Connection manager for WebSocket connections
 class ConnectionManager:
     """Manages WebSocket connections for MCP protocol."""
-    
+
     def __init__(self):
         self.active_connections: List[WebSocket] = []
         self.connection_ids: Dict[WebSocket, str] = {}
         self.logger = logger.bind(component="connection_manager")
-    
+
     async def connect(self, websocket: WebSocket) -> str:
         """Accept and track new WebSocket connection."""
         await websocket.accept()
         connection_id = str(uuid.uuid4())
         self.active_connections.append(websocket)
         self.connection_ids[websocket] = connection_id
-        
+
         self.logger.info("WebSocket connected", connection_id=connection_id)
         return connection_id
-    
+
     def disconnect(self, websocket: WebSocket):
         """Remove WebSocket connection."""
         connection_id = self.connection_ids.get(websocket, "unknown")
@@ -121,16 +121,16 @@ class ConnectionManager:
             self.active_connections.remove(websocket)
         if websocket in self.connection_ids:
             del self.connection_ids[websocket]
-        
+
         self.logger.info("WebSocket disconnected", connection_id=connection_id)
-    
+
     async def send_message(self, websocket: WebSocket, message: Dict[str, Any]):
         """Send message to specific WebSocket."""
         try:
             await websocket.send_text(json.dumps(message))
         except Exception as e:
             connection_id = self.connection_ids.get(websocket, "unknown")
-            self.logger.error("Failed to send message", 
+            self.logger.error("Failed to send message",
                             connection_id=connection_id, error=str(e))
 
 manager = ConnectionManager()
@@ -139,7 +139,7 @@ manager = ConnectionManager()
 async def startup_event():
     """Initialize the FinDB service on startup."""
     global findb_service
-    
+
     try:
         settings = get_settings()
         findb_service = FinDBService(settings)
@@ -152,7 +152,7 @@ async def startup_event():
 async def shutdown_event():
     """Cleanup on shutdown."""
     global findb_service
-    
+
     if findb_service:
         await findb_service.cleanup()
         logger.info("FinDB MCP Server shutdown complete")
@@ -162,15 +162,15 @@ async def health_check():
     """Health check endpoint."""
     if not findb_service:
         raise HTTPException(status_code=503, detail="Service not initialized")
-    
+
     try:
         health_status = await findb_service.health_check()
-        
+
         if health_status["status"] == "healthy":
             return JSONResponse(content=health_status)
         else:
             raise HTTPException(status_code=503, detail=health_status)
-    
+
     except Exception as e:
         logger.error("Health check failed", error=str(e))
         raise HTTPException(status_code=503, detail=f"Health check failed: {e}")
@@ -262,22 +262,22 @@ async def get_capabilities():
 async def websocket_mcp_endpoint(websocket: WebSocket):
     """Main WebSocket endpoint for MCP protocol communication."""
     connection_id = await manager.connect(websocket)
-    
+
     try:
         while True:
             # Receive MCP message
             data = await websocket.receive_text()
-            
+
             try:
                 # Parse MCP request
                 mcp_request = MCPRequest.model_validate(json.loads(data))
-                
+
                 # Process the request
                 response = await process_mcp_request(mcp_request, connection_id)
-                
+
                 # Send response
                 await manager.send_message(websocket, response.model_dump())
-                
+
             except PydanticValidationError as e:
                 # Invalid MCP request format
                 error_response = MCPErrorResponse(
@@ -289,11 +289,11 @@ async def websocket_mcp_endpoint(websocket: WebSocket):
                     }
                 )
                 await manager.send_message(websocket, error_response.model_dump())
-                
+
             except Exception as e:
-                logger.error("Error processing MCP request", 
+                logger.error("Error processing MCP request",
                            connection_id=connection_id, error=str(e))
-                
+
                 error_response = MCPErrorResponse(
                     id=getattr(mcp_request, 'id', None) if 'mcp_request' in locals() else None,
                     error={
@@ -303,11 +303,11 @@ async def websocket_mcp_endpoint(websocket: WebSocket):
                     }
                 )
                 await manager.send_message(websocket, error_response.model_dump())
-    
+
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception as e:
-        logger.error("WebSocket connection error", 
+        logger.error("WebSocket connection error",
                     connection_id=connection_id, error=str(e))
         manager.disconnect(websocket)
 
@@ -315,14 +315,14 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
     """Process an MCP request and return appropriate response."""
     if not findb_service:
         raise MCPError("FinDB service not initialized")
-    
+
     method = request.method
     params = request.params or {}
-    
-    logger.info("Processing MCP request", 
-               connection_id=connection_id, 
+
+    logger.info("Processing MCP request",
+               connection_id=connection_id,
                method=method)
-    
+
     try:
         if method == "find_comparable_properties":
             # Create FinDBQuery for comps analysis
@@ -337,9 +337,9 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
                 max_results=params.get("max_results", 10),
                 property_filter=params.get("property_filter")
             )
-            
+
             result = await findb_service.process_query(query)
-            
+
             return MCPResponse(
                 id=request.id,
                 result={
@@ -348,19 +348,19 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
                     "error": result.error_message
                 }
             )
-        
+
         elif method == "get_market_data":
             # Create market data query
             market_request = MarketDataRequest(**params)
-            
+
             query = FinDBQuery(
                 query_id=str(uuid.uuid4()),
                 query_type=FinDBQueryType.MARKET_DATA,
                 market_request=market_request
             )
-            
+
             result = await findb_service.process_query(query)
-            
+
             return MCPResponse(
                 id=request.id,
                 result={
@@ -369,25 +369,25 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
                     "error": result.error_message
                 }
             )
-        
+
         elif method == "analyze_property_value":
             # Property valuation query
             from packages.common.models import PropertyValuationRequest
-            
+
             valuation_request = PropertyValuationRequest(
                 property_id=params["property_id"],
                 market_cap_rate=params.get("market_cap_rate"),
                 valuation_date=datetime.now()
             )
-            
+
             query = FinDBQuery(
                 query_id=str(uuid.uuid4()),
                 query_type=FinDBQueryType.VALUATION,
                 valuation_request=valuation_request
             )
-            
+
             result = await findb_service.process_query(query)
-            
+
             return MCPResponse(
                 id=request.id,
                 result={
@@ -396,25 +396,25 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
                     "error": result.error_message
                 }
             )
-        
+
         elif method == "analyze_cap_rates":
             # Cap rate analysis query
             from packages.common.models import CapRateAnalysisRequest
-            
+
             cap_rate_request = CapRateAnalysisRequest(
                 property_type=params["property_type"],
                 city=params["city"],
                 state=params["state"]
             )
-            
+
             query = FinDBQuery(
                 query_id=str(uuid.uuid4()),
                 query_type=FinDBQueryType.CAP_RATE_ANALYSIS,
                 cap_rate_request=cap_rate_request
             )
-            
+
             result = await findb_service.process_query(query)
-            
+
             return MCPResponse(
                 id=request.id,
                 result={
@@ -423,11 +423,11 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
                     "error": result.error_message
                 }
             )
-        
+
         elif method == "analyze_market_trends":
             # Market trend analysis query
             from packages.common.models import TrendAnalysisRequest
-            
+
             trend_request = TrendAnalysisRequest(
                 property_type=params["property_type"],
                 city=params.get("city"),
@@ -435,15 +435,15 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
                 start_date=datetime.fromisoformat(params["start_date"]),
                 end_date=datetime.fromisoformat(params["end_date"])
             )
-            
+
             query = FinDBQuery(
                 query_id=str(uuid.uuid4()),
                 query_type=FinDBQueryType.TREND_ANALYSIS,
                 trend_request=trend_request
             )
-            
+
             result = await findb_service.process_query(query)
-            
+
             return MCPResponse(
                 id=request.id,
                 result={
@@ -452,7 +452,7 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
                     "error": result.error_message
                 }
             )
-        
+
         else:
             return MCPResponse(
                 id=request.id,
@@ -462,11 +462,11 @@ async def process_mcp_request(request: MCPRequest, connection_id: str) -> MCPRes
                     "data": None
                 }
             )
-    
+
     except Exception as e:
-        logger.error("Error processing MCP method", 
+        logger.error("Error processing MCP method",
                     method=method, error=str(e))
-        
+
         return MCPResponse(
             id=request.id,
             error={
@@ -482,7 +482,7 @@ async def comparable_analysis_endpoint(request: CompsAnalysisRequest):
     """HTTP endpoint for comparable property analysis."""
     if not findb_service:
         raise HTTPException(status_code=503, detail="Service not initialized")
-    
+
     try:
         # Create FinDB query
         query = FinDBQuery(
@@ -492,14 +492,14 @@ async def comparable_analysis_endpoint(request: CompsAnalysisRequest):
             radius_miles=request.radius_miles,
             max_results=request.max_results
         )
-        
+
         result = await findb_service.process_query(query)
-        
+
         if result.success:
             return result.result.model_dump()
         else:
             raise HTTPException(status_code=400, detail=result.error_message)
-    
+
     except Exception as e:
         logger.error("Error in comparable analysis endpoint", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
@@ -509,7 +509,7 @@ async def market_data_endpoint(request: MarketDataHTTPRequest):
     """HTTP endpoint for market data analysis."""
     if not findb_service:
         raise HTTPException(status_code=503, detail="Service not initialized")
-    
+
     try:
         # Create market data request
         market_request = MarketDataRequest(
@@ -520,20 +520,20 @@ async def market_data_endpoint(request: MarketDataHTTPRequest):
             start_date=request.start_date,
             end_date=request.end_date
         )
-        
+
         query = FinDBQuery(
             query_id=str(uuid.uuid4()),
             query_type=FinDBQueryType.MARKET_DATA,
             market_request=market_request
         )
-        
+
         result = await findb_service.process_query(query)
-        
+
         if result.success:
             return result.result.model_dump()
         else:
             raise HTTPException(status_code=400, detail=result.error_message)
-    
+
     except Exception as e:
         logger.error("Error in market data endpoint", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
@@ -543,36 +543,36 @@ async def property_valuation_endpoint(request: PropertyValuationHTTPRequest):
     """HTTP endpoint for property valuation."""
     if not findb_service:
         raise HTTPException(status_code=503, detail="Service not initialized")
-    
+
     try:
         from packages.common.models import PropertyValuationRequest
-        
+
         valuation_request = PropertyValuationRequest(
             property_id=request.property_id,
             market_cap_rate=request.market_cap_rate,
             valuation_date=request.valuation_date or datetime.now()
         )
-        
+
         query = FinDBQuery(
             query_id=str(uuid.uuid4()),
             query_type=FinDBQueryType.VALUATION,
             valuation_request=valuation_request
         )
-        
+
         result = await findb_service.process_query(query)
-        
+
         if result.success:
             return result.result.model_dump()
         else:
             raise HTTPException(status_code=400, detail=result.error_message)
-    
+
     except Exception as e:
         logger.error("Error in property valuation endpoint", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Run the server
     uvicorn.run(
         "main:app",

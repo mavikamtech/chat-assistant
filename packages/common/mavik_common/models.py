@@ -16,10 +16,10 @@ from pydantic import BaseModel, Field, validator
 
 class BaseRequest(BaseModel):
     """Base class for all MCP tool requests."""
-    
+
     request_id: Optional[str] = Field(None, description="Unique request identifier")
     timestamp: Optional[datetime] = Field(default_factory=datetime.utcnow)
-    
+
     class Config:
         """Pydantic configuration."""
         use_enum_values = True
@@ -29,12 +29,12 @@ class BaseRequest(BaseModel):
 
 class BaseResponse(BaseModel):
     """Base class for all MCP tool responses."""
-    
+
     success: bool = Field(True, description="Whether the request was successful")
     error_code: Optional[str] = Field(None, description="Error code if request failed")
     error_message: Optional[str] = Field(None, description="Human-readable error message")
     execution_time_ms: Optional[int] = Field(None, description="Execution time in milliseconds")
-    
+
     class Config:
         """Pydantic configuration."""
         use_enum_values = True
@@ -46,7 +46,7 @@ class BaseResponse(BaseModel):
 
 class MCPRequest(BaseModel):
     """MCP protocol request wrapper."""
-    
+
     method: str = Field(..., description="MCP method name")
     params: Dict[str, Any] = Field(default_factory=dict, description="Method parameters")
     id: Optional[Union[str, int]] = Field(None, description="Request ID")
@@ -55,7 +55,7 @@ class MCPRequest(BaseModel):
 
 class MCPResponse(BaseModel):
     """MCP protocol response wrapper."""
-    
+
     result: Optional[Dict[str, Any]] = Field(None, description="Method result")
     error: Optional[Dict[str, Any]] = Field(None, description="Error information")
     id: Optional[Union[str, int]] = Field(None, description="Request ID")
@@ -64,7 +64,7 @@ class MCPResponse(BaseModel):
 
 class MCPErrorResponse(BaseModel):
     """MCP protocol error response."""
-    
+
     code: int = Field(..., description="Error code")
     message: str = Field(..., description="Error message")
     data: Optional[Dict[str, Any]] = Field(None, description="Additional error data")
@@ -76,7 +76,7 @@ class MCPErrorResponse(BaseModel):
 
 class DocumentMetadata(BaseModel):
     """Document metadata information."""
-    
+
     file_name: str = Field(..., description="Original filename")
     file_size: int = Field(..., ge=0, description="File size in bytes")
     file_type: str = Field(..., description="File MIME type")
@@ -88,7 +88,7 @@ class DocumentMetadata(BaseModel):
 
 class ParsedDocument(BaseModel):
     """Parsed document result."""
-    
+
     document_id: str = Field(..., description="Document identifier")
     s3_uri: str = Field(..., description="Source S3 URI")
     content: str = Field(..., description="Extracted text content")
@@ -127,7 +127,7 @@ class GeographicRegion(str, Enum):
 class MNPIClassification(str, Enum):
     """Material Non-Public Information classification levels."""
     PUBLIC = "public"
-    INTERNAL = "internal" 
+    INTERNAL = "internal"
     CONFIDENTIAL = "confidential"
     RESTRICTED = "restricted"
 
@@ -149,7 +149,7 @@ class CalculationFormula(str, Enum):
 
 class RAGSearchRequest(BaseRequest):
     """Request model for RAG search tool."""
-    
+
     query: str = Field(..., min_length=1, max_length=1000, description="Search query")
     filters: Dict[str, Any] = Field(
         default_factory=dict,
@@ -158,7 +158,7 @@ class RAGSearchRequest(BaseRequest):
     top_k: int = Field(5, ge=1, le=50, description="Number of results to return")
     include_embeddings: bool = Field(False, description="Include embedding vectors in response")
     rerank: bool = Field(True, description="Apply LLM-based reranking to results")
-    
+
     @validator('filters')
     def validate_filters(cls, v):
         """Validate filter parameters."""
@@ -170,7 +170,7 @@ class RAGSearchRequest(BaseRequest):
 
 class RAGChunk(BaseModel):
     """Individual search result chunk."""
-    
+
     text: str = Field(..., description="Text content of the chunk")
     citation_id: str = Field(..., description="Unique citation identifier")
     score: float = Field(..., ge=0.0, le=1.0, description="Relevance score")
@@ -185,7 +185,7 @@ class RAGChunk(BaseModel):
 
 class RAGSearchResponse(BaseResponse):
     """Response model for RAG search tool."""
-    
+
     chunks: List[RAGChunk] = Field(default_factory=list, description="Search result chunks")
     total_matches: int = Field(0, ge=0, description="Total number of matches found")
     query_embedding: Optional[List[float]] = Field(None, description="Query embedding vector")
@@ -194,7 +194,7 @@ class RAGSearchResponse(BaseResponse):
 
 class RAGIndexRequest(BaseRequest):
     """Request model for RAG indexing tool."""
-    
+
     s3_uri: str = Field(..., description="S3 URI of document to index")
     deal_id: str = Field(..., description="Deal identifier for context")
     force_reindex: bool = Field(False, description="Force reindexing if already indexed")
@@ -205,7 +205,7 @@ class RAGIndexRequest(BaseRequest):
 
 class RAGIndexResponse(BaseResponse):
     """Response model for RAG indexing tool."""
-    
+
     document_id: str = Field(..., description="Generated document identifier")
     chunks_created: int = Field(0, ge=0, description="Number of chunks created")
     embedding_model: str = Field(..., description="Embedding model used")
@@ -214,7 +214,7 @@ class RAGIndexResponse(BaseResponse):
 
 class RAGDeleteRequest(BaseRequest):
     """Request model for RAG document deletion."""
-    
+
     document_id: Optional[str] = Field(None, description="Document ID to delete")
     deal_id: Optional[str] = Field(None, description="Delete all documents for deal")
     confirm_deletion: bool = Field(False, description="Confirmation flag for deletion")
@@ -222,7 +222,7 @@ class RAGDeleteRequest(BaseRequest):
 
 class RAGDeleteResponse(BaseResponse):
     """Response model for RAG document deletion."""
-    
+
     documents_deleted: int = Field(0, ge=0, description="Number of documents deleted")
     chunks_deleted: int = Field(0, ge=0, description="Number of chunks deleted")
     deletion_metadata: Dict[str, Any] = Field(default_factory=dict, description="Deletion metadata")
@@ -232,7 +232,7 @@ class RAGDeleteResponse(BaseResponse):
 
 class BoundingBox(BaseModel):
     """Bounding box coordinates for document elements."""
-    
+
     left: float = Field(..., ge=0, le=1, description="Left coordinate (normalized)")
     top: float = Field(..., ge=0, le=1, description="Top coordinate (normalized)")
     width: float = Field(..., ge=0, le=1, description="Width (normalized)")
@@ -241,7 +241,7 @@ class BoundingBox(BaseModel):
 
 class DocumentElement(BaseModel):
     """Base class for document elements."""
-    
+
     element_id: str = Field(..., description="Unique element identifier")
     element_type: str = Field(..., description="Type of element (text, table, form, etc.)")
     page_number: int = Field(..., ge=1, description="Page number where element appears")
@@ -251,7 +251,7 @@ class DocumentElement(BaseModel):
 
 class DocumentPage(BaseModel):
     """Document page with extracted elements."""
-    
+
     page_number: int = Field(..., ge=1, description="Page number")
     width: float = Field(..., gt=0, description="Page width in points")
     height: float = Field(..., gt=0, description="Page height in points")
@@ -261,7 +261,7 @@ class DocumentPage(BaseModel):
 
 class DocumentTable(BaseModel):
     """Table extracted from document."""
-    
+
     table_id: str = Field(..., description="Unique table identifier")
     headers: List[str] = Field(default_factory=list, description="Table headers")
     rows: List[List[str]] = Field(default_factory=list, description="Table data rows")
@@ -272,7 +272,7 @@ class DocumentTable(BaseModel):
 
 class DocumentForm(BaseModel):
     """Form field extracted from document."""
-    
+
     field_id: str = Field(..., description="Unique field identifier")
     field_name: str = Field(..., description="Form field name")
     field_value: str = Field("", description="Form field value")
@@ -286,7 +286,7 @@ class DocumentForm(BaseModel):
 
 class ParserRequest(BaseRequest):
     """Request model for document parsing."""
-    
+
     s3_uri: str = Field(..., description="S3 URI of document to parse")
     deal_id: str = Field(..., description="Deal identifier for context")
     force_reprocess: bool = Field(False, description="Force reprocessing if already parsed")
@@ -297,7 +297,7 @@ class ParserRequest(BaseRequest):
 
 class ParserResponse(BaseResponse):
     """Response model for document parsing."""
-    
+
     document_id: str = Field(..., description="Generated document identifier")
     parsed_content: ParsedDocument = Field(..., description="Parsed document content")
     processing_time_ms: int = Field(..., ge=0, description="Processing time in milliseconds")
@@ -306,7 +306,7 @@ class ParserResponse(BaseResponse):
 
 class ParserUploadRequest(BaseRequest):
     """Request model for document upload and parsing."""
-    
+
     deal_id: str = Field(..., description="Deal identifier for context")
     filename: str = Field(..., description="Original filename")
     content_type: str = Field(..., description="MIME type of the document")
@@ -316,7 +316,7 @@ class ParserUploadRequest(BaseRequest):
 
 class ParserUploadResponse(BaseResponse):
     """Response model for document upload and parsing."""
-    
+
     s3_uri: str = Field(..., description="S3 URI where document was stored")
     document_id: str = Field(..., description="Generated document identifier")
     upload_size_bytes: int = Field(..., ge=0, description="Size of uploaded file")
@@ -325,7 +325,7 @@ class ParserUploadResponse(BaseResponse):
 
 class ParserExtractRequest(BaseRequest):
     """Request model for document parser tool."""
-    
+
     s3_uri: str = Field(..., description="S3 URI of document to parse")
     deal_id: str = Field(..., description="Deal identifier for context")
     force_reprocess: bool = Field(False, description="Force reprocessing if already parsed")
@@ -336,7 +336,7 @@ class ParserExtractRequest(BaseRequest):
 
 class ParserTable(BaseModel):
     """Structured table extracted from document."""
-    
+
     name: str = Field(..., description="Table identifier (rent_roll, expense_breakdown, etc.)")
     headers: List[str] = Field(default_factory=list, description="Table column headers")
     rows: List[Dict[str, Any]] = Field(default_factory=list, description="Table data rows")
@@ -347,9 +347,9 @@ class ParserTable(BaseModel):
 
 class ParserTextSection(BaseModel):
     """Text section extracted from document."""
-    
+
     title: str = Field(..., description="Section title or heading")
-    content: str = Field(..., description="Section text content") 
+    content: str = Field(..., description="Section text content")
     page: Optional[int] = Field(None, description="Source page number")
     confidence: float = Field(1.0, ge=0.0, le=1.0, description="Extraction confidence")
     section_type: Optional[str] = Field(None, description="Classified section type")
@@ -357,7 +357,7 @@ class ParserTextSection(BaseModel):
 
 class ParserExtractResponse(BaseResponse):
     """Response model for document parser tool."""
-    
+
     tables: Dict[str, List[ParserTable]] = Field(
         default_factory=dict,
         description="Extracted tables by category"
@@ -375,7 +375,7 @@ class ParserExtractResponse(BaseResponse):
 
 class FinDBQueryRequest(BaseRequest):
     """Request model for financial database queries."""
-    
+
     deal_id: Optional[str] = Field(None, description="Specific deal ID to query")
     filters: Dict[str, Any] = Field(default_factory=dict, description="Query filters")
     include_metrics: bool = Field(True, description="Include financial metrics")
@@ -389,22 +389,22 @@ class FinDBQueryRequest(BaseRequest):
 
 class FinDBMetrics(BaseModel):
     """Financial metrics from database."""
-    
+
     # Coverage ratios
     dscr: Optional[float] = Field(None, ge=0, description="Debt Service Coverage Ratio")
     interest_coverage: Optional[float] = Field(None, ge=0, description="Interest Coverage Ratio")
-    
-    # Leverage ratios  
+
+    # Leverage ratios
     ltv: Optional[float] = Field(None, ge=0, le=1, description="Loan-to-Value ratio")
     ltc: Optional[float] = Field(None, ge=0, le=1, description="Loan-to-Cost ratio")
     debt_yield: Optional[float] = Field(None, ge=0, description="Debt yield percentage")
-    
+
     # Return metrics
     irr_equity: Optional[float] = Field(None, description="Equity IRR percentage")
     irr_project: Optional[float] = Field(None, description="Project IRR percentage")
     moic: Optional[float] = Field(None, ge=0, description="Multiple on Invested Capital")
     cash_on_cash: Optional[float] = Field(None, description="Cash-on-cash return")
-    
+
     # Valuation metrics
     cap_rate: Optional[float] = Field(None, ge=0, description="Capitalization rate")
     exit_cap_rate: Optional[float] = Field(None, ge=0, description="Exit cap rate assumption")
@@ -414,7 +414,7 @@ class FinDBMetrics(BaseModel):
 
 class FinDBTenant(BaseModel):
     """Tenant information from database."""
-    
+
     tenant_name: str = Field(..., description="Tenant name")
     lease_start: Optional[datetime] = Field(None, description="Lease start date")
     lease_end: Optional[datetime] = Field(None, description="Lease end date")
@@ -427,7 +427,7 @@ class FinDBTenant(BaseModel):
 
 class FinDBDebtTerms(BaseModel):
     """Debt terms from database."""
-    
+
     loan_amount: Optional[Decimal] = Field(None, ge=0, description="Total loan amount")
     interest_rate: Optional[float] = Field(None, ge=0, description="Interest rate percentage")
     loan_term_months: Optional[int] = Field(None, ge=0, description="Loan term in months")
@@ -439,7 +439,7 @@ class FinDBDebtTerms(BaseModel):
 
 class FinDBQueryResponse(BaseResponse):
     """Response model for financial database queries."""
-    
+
     metrics: Optional[FinDBMetrics] = Field(None, description="Financial metrics")
     tenants: List[FinDBTenant] = Field(default_factory=list, description="Tenant information")
     debt_terms: Optional[FinDBDebtTerms] = Field(None, description="Debt terms")
@@ -450,17 +450,17 @@ class FinDBQueryResponse(BaseResponse):
 
 class WebSearchRequest(BaseRequest):
     """Request model for web search tool."""
-    
+
     queries: List[str] = Field(
-        ..., 
-        min_items=1, 
+        ...,
+        min_items=1,
         max_items=10,
         description="Search query strings"
     )
     allowlist_group: str = Field(..., description="Domain allowlist group to use")
     max_results_per_query: int = Field(5, ge=1, le=20, description="Max results per query")
     include_content: bool = Field(True, description="Include page content in results")
-    
+
     @validator('queries')
     def validate_queries(cls, v):
         """Validate query strings."""
@@ -474,7 +474,7 @@ class WebSearchRequest(BaseRequest):
 
 class WebSearchResult(BaseModel):
     """Individual web search result."""
-    
+
     title: str = Field(..., description="Page title")
     url: str = Field(..., description="Page URL")
     snippet: str = Field(..., description="Page content snippet")
@@ -487,7 +487,7 @@ class WebSearchResult(BaseModel):
 
 class WebSearchResponse(BaseResponse):
     """Response model for web search tool."""
-    
+
     results: List[WebSearchResult] = Field(default_factory=list, description="Search results")
     total_results: int = Field(0, ge=0, description="Total results across all queries")
     cache_hits: int = Field(0, ge=0, description="Number of cache hits")
@@ -498,41 +498,41 @@ class WebSearchResponse(BaseResponse):
 
 class CalcComputeRequest(BaseRequest):
     """Request model for financial calculations."""
-    
+
     formula: CalculationFormula = Field(..., description="Calculation formula to use")
     inputs: Dict[str, Union[float, int, List[float]]] = Field(
         ...,
         description="Calculation inputs as key-value pairs"
     )
     precision: int = Field(4, ge=2, le=10, description="Decimal precision for results")
-    
+
     @validator('inputs')
     def validate_inputs(cls, v, values):
         """Validate inputs based on formula type."""
         formula = values.get('formula')
-        
+
         if formula == CalculationFormula.IRR:
             if 'cash_flows' not in v:
                 raise ValueError("IRR calculation requires 'cash_flows' input")
             if not isinstance(v['cash_flows'], list):
                 raise ValueError("'cash_flows' must be a list of numbers")
-                
+
         elif formula == CalculationFormula.NPV:
             required = {'cash_flows', 'discount_rate'}
             if not required.issubset(v.keys()):
                 raise ValueError(f"NPV calculation requires inputs: {required}")
-                
+
         elif formula == CalculationFormula.DSCR:
             required = {'net_operating_income', 'debt_service'}
             if not required.issubset(v.keys()):
                 raise ValueError(f"DSCR calculation requires inputs: {required}")
-                
+
         return v
 
 
 class CalcExplanation(BaseModel):
     """Calculation explanation and methodology."""
-    
+
     formula_name: str = Field(..., description="Calculation formula name")
     inputs_used: Dict[str, Union[float, int, List[float]]] = Field(
         ...,
@@ -545,7 +545,7 @@ class CalcExplanation(BaseModel):
 
 class CalcComputeResponse(BaseResponse):
     """Response model for financial calculations."""
-    
+
     value: float = Field(..., description="Calculated result value")
     formatted_value: str = Field(..., description="Human-readable formatted result")
     explanation: CalcExplanation = Field(..., description="Calculation explanation")
@@ -556,7 +556,7 @@ class CalcComputeResponse(BaseResponse):
 
 class ReportSection(BaseModel):
     """Individual report section."""
-    
+
     title: str = Field(..., description="Section title")
     content: str = Field(..., description="Section content")
     order: int = Field(..., ge=0, description="Section ordering")
@@ -565,14 +565,14 @@ class ReportSection(BaseModel):
 
 class ReportCreateRequest(BaseRequest):
     """Request model for report generation."""
-    
+
     structured_analysis: Dict[str, Any] = Field(..., description="Analysis data to include")
     schema_version: str = Field("mavik.analysis.v1", description="Analysis schema version")
     template_type: str = Field("standard", description="Report template to use")
     include_citations: bool = Field(True, description="Include citation references")
     include_charts: bool = Field(True, description="Include data visualizations")
     format: str = Field("docx", description="Output format")
-    
+
     @validator('structured_analysis')
     def validate_analysis_structure(cls, v):
         """Validate analysis structure."""
@@ -584,7 +584,7 @@ class ReportCreateRequest(BaseRequest):
 
 class ReportCreateResponse(BaseResponse):
     """Response model for report generation."""
-    
+
     s3_presigned_url: str = Field(..., description="S3 presigned URL for download")
     report_version: str = Field(..., description="Generated report version")
     file_size_bytes: int = Field(..., ge=0, description="Generated file size")
@@ -596,28 +596,28 @@ class ReportCreateResponse(BaseResponse):
 
 class AnalysisMetadata(BaseModel):
     """Metadata for analysis results."""
-    
+
     schema_version: str = Field("mavik.analysis.v1", description="Schema version")
     deal_id: str = Field(..., description="Deal identifier")
     analysis_type: str = Field(..., description="Type of analysis performed")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Analysis timestamp")
     analyst_agent: str = Field(..., description="Agent that performed analysis")
     confidence_score: float = Field(1.0, ge=0.0, le=1.0, description="Overall confidence")
-    
+
 
 class AnalysisSection(BaseModel):
     """Individual analysis section."""
-    
+
     title: str = Field(..., description="Section title")
     content: str = Field(..., description="Section analysis content")
     citations: List[str] = Field(default_factory=list, description="Citation references")
     confidence: float = Field(1.0, ge=0.0, le=1.0, description="Section confidence score")
     metrics: Dict[str, Any] = Field(default_factory=dict, description="Quantitative metrics")
-    
+
 
 class StructuredAnalysis(BaseModel):
     """Complete structured analysis result."""
-    
+
     metadata: AnalysisMetadata = Field(..., description="Analysis metadata")
     sections: Dict[str, AnalysisSection] = Field(..., description="Analysis sections")
     summary: str = Field(..., description="Executive summary")
@@ -630,9 +630,9 @@ class StructuredAnalysis(BaseModel):
 
 class FinDBQueryType(str, Enum):
     """Types of financial database queries."""
-    
+
     PROPERTY = "property"
-    COMPS = "comps" 
+    COMPS = "comps"
     MARKET_DATA = "market_data"
     PORTFOLIO = "portfolio"
     SEARCH = "search"
@@ -640,7 +640,7 @@ class FinDBQueryType(str, Enum):
 
 class PropertyData(BaseModel):
     """Property information and metrics."""
-    
+
     property_id: str = Field(..., description="Unique property identifier")
     address: str = Field(..., description="Property address")
     city: str = Field(..., description="City")
@@ -658,7 +658,7 @@ class PropertyData(BaseModel):
 
 class CompsRequest(BaseModel):
     """Request for comparable properties analysis."""
-    
+
     target_property_id: str = Field(..., description="Target property for comparison")
     radius_miles: float = Field(5.0, ge=0.1, le=50, description="Search radius in miles")
     property_types: List[str] = Field(default_factory=list, description="Property types to include")
@@ -670,7 +670,7 @@ class CompsRequest(BaseModel):
 
 class MarketDataRequest(BaseModel):
     """Request for market data and analytics."""
-    
+
     market_area: str = Field(..., description="Market area identifier")
     property_types: List[str] = Field(default_factory=list, description="Property types")
     date_range_start: Optional[datetime] = Field(None, description="Start date for historical data")
@@ -680,7 +680,7 @@ class MarketDataRequest(BaseModel):
 
 class FinDBQuery(BaseRequest):
     """Request model for financial database queries."""
-    
+
     query_type: FinDBQueryType = Field(..., description="Type of query to execute")
     property_id: Optional[str] = Field(None, description="Property ID for property-specific queries")
     search_criteria: Dict[str, Any] = Field(default_factory=dict, description="Search parameters")
@@ -693,7 +693,7 @@ class FinDBQuery(BaseRequest):
 
 class FinDBResponse(BaseResponse):
     """Response model for financial database queries."""
-    
+
     query_type: FinDBQueryType = Field(..., description="Type of query executed")
     property_data: Optional[PropertyData] = Field(None, description="Property information")
     comparables: List[PropertyData] = Field(default_factory=list, description="Comparable properties")

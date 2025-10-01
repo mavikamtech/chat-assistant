@@ -62,16 +62,16 @@ async def initialize_services():
     """Initialize AWS clients and services."""
     global opensearch_client, bedrock_client, s3_client, textract_client
     global document_processor, document_indexer, vector_search
-    
+
     try:
         logger.info("Initializing RAG MCP services...")
-        
+
         # Initialize AWS clients
         # Construct OpenSearch endpoint for local development
         opensearch_host = os.getenv("OPENSEARCH_HOST", "localhost")
         opensearch_port = os.getenv("OPENSEARCH_PORT", "9200")
         opensearch_endpoint = f"http://{opensearch_host}:{opensearch_port}"
-        
+
         opensearch_client = OpenSearchClient(
             domain_endpoint=opensearch_endpoint,
             region_name=settings.aws_region,
@@ -83,20 +83,20 @@ async def initialize_services():
         bedrock_client = BedrockClient()
         s3_client = S3Client()
         textract_client = TextractClient()
-        
+
         # Initialize document services
         document_processor = DocumentProcessor()
         document_indexer = DocumentIndexer()
-        
+
         # Initialize vector search
         vector_search = VectorSearchService(
             opensearch_client=opensearch_client,
             bedrock_client=bedrock_client,
             index_name=settings.opensearch_index_documents,
         )
-        
+
         logger.info("RAG MCP services initialized successfully")
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize services: {e}")
         raise
@@ -124,7 +124,7 @@ async def health_check():
             "timestamp": datetime.utcnow().isoformat(),
             "version": "1.0.0",
         }
-        
+
         # Check service dependencies if available
         if vector_search:
             search_health = await vector_search.health_check()
@@ -132,9 +132,9 @@ async def health_check():
                 "opensearch": search_health.get("opensearch_healthy", False),
                 "index_exists": search_health.get("index_exists", False),
             }
-        
+
         return health_status
-        
+
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         return JSONResponse(
@@ -153,7 +153,7 @@ async def websocket_endpoint(websocket: WebSocket):
     """Main MCP WebSocket endpoint."""
     await websocket.accept()
     logger.info("RAG MCP WebSocket connection established")
-    
+
     try:
         while True:
             # Receive MCP request
@@ -162,7 +162,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     websocket.receive_text(),
                     timeout=settings.rag_timeout_seconds
                 )
-                
+
                 # Parse MCP request
                 try:
                     request_data = json.loads(data)
@@ -177,13 +177,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     )
                     await websocket.send_text(error_response.json())
                     continue
-                
+
                 # Process MCP request
                 response = await process_mcp_request(mcp_request)
-                
+
                 # Send response
                 await websocket.send_text(response.json())
-                
+
             except asyncio.TimeoutError:
                 logger.warning("WebSocket timeout waiting for request")
                 error_response = MCPResponse(
@@ -195,7 +195,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 )
                 await websocket.send_text(error_response.json())
                 break
-                
+
     except WebSocketDisconnect:
         logger.info("RAG MCP WebSocket disconnected")
     except Exception as e:
@@ -215,10 +215,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
 async def process_mcp_request(request: MCPRequest) -> MCPResponse:
     """Process incoming MCP request and return response."""
-    
+
     try:
         logger.info(f"Processing MCP request: {request.method}")
-        
+
         # Route request to appropriate handler
         if request.method == "rag/search":
             return await handle_search_request(request)
@@ -238,7 +238,7 @@ async def process_mcp_request(request: MCPRequest) -> MCPResponse:
                     "message": f"Unknown method: {request.method}",
                 }
             )
-            
+
     except Exception as e:
         logger.error(f"Error processing MCP request {request.id}: {e}")
         return MCPResponse(
@@ -252,7 +252,7 @@ async def process_mcp_request(request: MCPRequest) -> MCPResponse:
 
 async def handle_search_request(request: MCPRequest) -> MCPResponse:
     """Handle document search request."""
-    
+
     if not vector_search:
         return MCPResponse(
             id=request.id,
@@ -261,19 +261,19 @@ async def handle_search_request(request: MCPRequest) -> MCPResponse:
                 "message": "Vector search service not available",
             }
         )
-    
+
     try:
         # Parse search request
         search_request = RAGSearchRequest(**request.params)
-        
+
         # Perform search
         search_response = await vector_search.search_documents(search_request)
-        
+
         return MCPResponse(
             id=request.id,
             result=search_response.dict(),
         )
-        
+
     except ValidationError as e:
         return MCPResponse(
             id=request.id,
@@ -294,7 +294,7 @@ async def handle_search_request(request: MCPRequest) -> MCPResponse:
 
 async def handle_index_request(request: MCPRequest) -> MCPResponse:
     """Handle document indexing request."""
-    
+
     if not vector_search:
         return MCPResponse(
             id=request.id,
@@ -303,29 +303,29 @@ async def handle_index_request(request: MCPRequest) -> MCPResponse:
                 "message": "Vector search service not available",
             }
         )
-    
+
     try:
         # Parse index request
         index_request = RAGIndexRequest(**request.params)
-        
+
         # Convert to RAG chunks
         chunks = [RAGChunk(**chunk_data) for chunk_data in index_request.chunks]
-        
+
         # Index chunks
         result = await vector_search.index_chunks(chunks)
-        
+
         # Create response
         response = RAGIndexResponse(
             indexed_count=result["indexed_count"],
             failed_count=result["failed_count"],
             total_count=result["total_count"],
         )
-        
+
         return MCPResponse(
             id=request.id,
             result=response.dict(),
         )
-        
+
     except ValidationError as e:
         return MCPResponse(
             id=request.id,
@@ -346,7 +346,7 @@ async def handle_index_request(request: MCPRequest) -> MCPResponse:
 
 async def handle_delete_request(request: MCPRequest) -> MCPResponse:
     """Handle document deletion request."""
-    
+
     if not vector_search:
         return MCPResponse(
             id=request.id,
@@ -355,25 +355,25 @@ async def handle_delete_request(request: MCPRequest) -> MCPResponse:
                 "message": "Vector search service not available",
             }
         )
-    
+
     try:
         # Parse delete request
         delete_request = RAGDeleteRequest(**request.params)
-        
+
         # Delete document chunks
         result = await vector_search.delete_document_chunks(delete_request.document_id)
-        
+
         # Create response
         response = RAGDeleteResponse(
             document_id=delete_request.document_id,
             deleted_count=result["deleted_count"],
         )
-        
+
         return MCPResponse(
             id=request.id,
             result=response.dict(),
         )
-        
+
     except ValidationError as e:
         return MCPResponse(
             id=request.id,
@@ -394,7 +394,7 @@ async def handle_delete_request(request: MCPRequest) -> MCPResponse:
 
 async def handle_process_document_request(request: MCPRequest) -> MCPResponse:
     """Handle document processing request."""
-    
+
     if not document_processor or not document_indexer:
         return MCPResponse(
             id=request.id,
@@ -403,14 +403,14 @@ async def handle_process_document_request(request: MCPRequest) -> MCPResponse:
                 "message": "Document processing services not available",
             }
         )
-    
+
     try:
         # Extract parameters
         params = request.params
         s3_bucket = params.get("s3_bucket")
         s3_key = params.get("s3_key")
         document_id = params.get("document_id")
-        
+
         if not all([s3_bucket, s3_key, document_id]):
             return MCPResponse(
                 id=request.id,
@@ -419,10 +419,10 @@ async def handle_process_document_request(request: MCPRequest) -> MCPResponse:
                     "message": "Missing required parameters: s3_bucket, s3_key, document_id",
                 }
             )
-        
+
         # Process document
         logger.info(f"Processing document: {document_id} from s3://{s3_bucket}/{s3_key}")
-        
+
         # Index document (this will handle processing internally)
         result = await document_indexer.index_document(
             document_id=document_id,
@@ -430,7 +430,7 @@ async def handle_process_document_request(request: MCPRequest) -> MCPResponse:
             s3_key=s3_key,
             metadata=params.get("metadata", {}),
         )
-        
+
         return MCPResponse(
             id=request.id,
             result={
@@ -440,7 +440,7 @@ async def handle_process_document_request(request: MCPRequest) -> MCPResponse:
                 "indexing_result": result,
             },
         )
-        
+
     except ValidationError as e:
         return MCPResponse(
             id=request.id,
@@ -461,7 +461,7 @@ async def handle_process_document_request(request: MCPRequest) -> MCPResponse:
 
 def handle_list_tools_request(request: MCPRequest) -> MCPResponse:
     """Handle list tools request."""
-    
+
     tools = [
         {
             "name": "rag_search",
@@ -488,7 +488,7 @@ def handle_list_tools_request(request: MCPRequest) -> MCPResponse:
                         "default": True
                     },
                     "use_text_search": {
-                        "type": "boolean", 
+                        "type": "boolean",
                         "description": "Enable text-based search",
                         "default": True
                     }
@@ -542,7 +542,7 @@ def handle_list_tools_request(request: MCPRequest) -> MCPResponse:
                         "description": "S3 key (path) to the document"
                     },
                     "document_id": {
-                        "type": "string", 
+                        "type": "string",
                         "description": "Unique identifier for the document"
                     },
                     "metadata": {
@@ -554,7 +554,7 @@ def handle_list_tools_request(request: MCPRequest) -> MCPResponse:
             }
         }
     ]
-    
+
     return MCPResponse(
         id=request.id,
         result={"tools": tools},
@@ -563,7 +563,7 @@ def handle_list_tools_request(request: MCPRequest) -> MCPResponse:
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Run server
     uvicorn.run(
         "rag_server.main:app",

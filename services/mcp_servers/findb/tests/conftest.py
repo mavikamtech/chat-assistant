@@ -6,7 +6,7 @@ sample data, and test configuration across all test modules.
 """
 
 import asyncio
-from datetime import datetime, timedelta  
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import List, Dict, Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -46,13 +46,13 @@ def mock_settings():
 def mock_async_session():
     """Mock async database session."""
     session = AsyncMock(spec=AsyncSession)
-    
+
     # Setup default behaviors
     session.execute = AsyncMock()
     session.commit = AsyncMock()
     session.rollback = AsyncMock()
     session.close = AsyncMock()
-    
+
     return session
 
 
@@ -73,7 +73,7 @@ def sample_properties():
             sale_price=Decimal("12500000")
         ),
         PropertyData(
-            property_id="prop_002", 
+            property_id="prop_002",
             address="250 Broadway, New York, NY 10007",
             property_type="office",
             square_feet=120000,
@@ -87,7 +87,7 @@ def sample_properties():
         PropertyData(
             property_id="prop_003",
             address="500 Park Avenue, New York, NY 10022",
-            property_type="office", 
+            property_type="office",
             square_feet=95000,
             year_built=2020,
             latitude=40.7614,
@@ -145,7 +145,7 @@ def sample_comparable_properties():
         CompData(
             property_id="comp_002",
             address="150 Broadway, New York, NY 10038",
-            property_type="office", 
+            property_type="office",
             square_feet=78000,
             year_built=2016,
             sale_price=Decimal("13200000"),
@@ -190,7 +190,7 @@ def sample_market_trends():
             period_end=base_date + timedelta(days=90)
         ),
         MarketTrendData(
-            period="2023-Q2", 
+            period="2023-Q2",
             transaction_count=52,
             avg_price=Decimal("15800000"),
             avg_cap_rate=0.065,
@@ -221,7 +221,7 @@ def sample_market_trends():
 
 @pytest.fixture
 def sample_financial_metrics():
-    """Sample financial metrics data.""" 
+    """Sample financial metrics data."""
     return [
         FinancialMetrics(
             cap_rate=0.065,
@@ -256,7 +256,7 @@ def sample_financial_metrics():
     ]
 
 
-@pytest.fixture  
+@pytest.fixture
 def mock_database_responses():
     """Mock database query responses."""
     return {
@@ -276,7 +276,7 @@ def mock_database_responses():
                 "longitude": -73.9930
             },
             {
-                "property_id": "comp_002", 
+                "property_id": "comp_002",
                 "address": "150 Broadway, New York, NY 10038",
                 "property_type": "office",
                 "square_feet": 78000,
@@ -362,7 +362,7 @@ def mock_database_responses():
 def mock_sql_results(mock_database_responses):
     """Create mock SQL result objects."""
     results = {}
-    
+
     # Mock comparable properties query result
     comp_rows = []
     for comp_data in mock_database_responses["comparable_properties"]:
@@ -370,20 +370,20 @@ def mock_sql_results(mock_database_responses):
         for key, value in comp_data.items():
             setattr(row, key, value)
         comp_rows.append(row)
-    
+
     comp_result = MagicMock()
     comp_result.fetchall.return_value = comp_rows
     results["comparable_properties"] = comp_result
-    
-    # Mock market statistics query result  
+
+    # Mock market statistics query result
     market_row = MagicMock()
     for key, value in mock_database_responses["market_statistics"].items():
         setattr(market_row, key, value)
-    
+
     market_result = MagicMock()
     market_result.fetchone.return_value = market_row
     results["market_statistics"] = market_result
-    
+
     # Mock trend data query result
     trend_rows = []
     for trend_data in mock_database_responses["trend_data"]:
@@ -391,11 +391,11 @@ def mock_sql_results(mock_database_responses):
         for key, value in trend_data.items():
             setattr(row, key, value)
         trend_rows.append(row)
-    
+
     trend_result = MagicMock()
     trend_result.fetchall.return_value = trend_rows
     results["trend_data"] = trend_result
-    
+
     # Mock cap rate data query result
     cap_rate_rows = []
     for cap_data in mock_database_responses["cap_rate_data"]:
@@ -403,20 +403,20 @@ def mock_sql_results(mock_database_responses):
         for key, value in cap_data.items():
             setattr(row, key, value)
         cap_rate_rows.append(row)
-    
+
     cap_rate_result = MagicMock()
     cap_rate_result.fetchall.return_value = cap_rate_rows
     results["cap_rate_data"] = cap_rate_result
-    
+
     # Mock property details query result
     property_row = MagicMock()
     for key, value in mock_database_responses["property_details"].items():
         setattr(property_row, key, value)
-    
+
     property_result = MagicMock()
     property_result.fetchone.return_value = property_row
     results["property_details"] = property_result
-    
+
     return results
 
 
@@ -441,7 +441,7 @@ def mock_mcp_requests():
         },
         "get_market_data": {
             "jsonrpc": "2.0",
-            "id": "req_002", 
+            "id": "req_002",
             "method": "get_market_data",
             "params": {
                 "property_type": "office",
@@ -454,7 +454,7 @@ def mock_mcp_requests():
         "analyze_property_value": {
             "jsonrpc": "2.0",
             "id": "req_003",
-            "method": "analyze_property_value", 
+            "method": "analyze_property_value",
             "params": {
                 "property_id": "prop_001",
                 "market_cap_rate": 0.065
@@ -466,7 +466,7 @@ def mock_mcp_requests():
             "method": "analyze_cap_rates",
             "params": {
                 "property_type": "office",
-                "city": "New York", 
+                "city": "New York",
                 "state": "NY"
             }
         },
@@ -477,7 +477,7 @@ def mock_mcp_requests():
             "params": {
                 "property_type": "office",
                 "city": "New York",
-                "state": "NY", 
+                "state": "NY",
                 "start_date": "2022-01-01T00:00:00",
                 "end_date": "2023-12-31T23:59:59"
             }
@@ -495,7 +495,7 @@ def expected_mcp_responses():
             "result": {
                 "success": True,
                 "data": {
-                    "target_property_id": "prop_001", 
+                    "target_property_id": "prop_001",
                     "comparable_properties": [],
                     "search_radius_miles": 5.0,
                     "total_found": 0
@@ -504,7 +504,7 @@ def expected_mcp_responses():
             }
         },
         "get_market_data": {
-            "jsonrpc": "2.0", 
+            "jsonrpc": "2.0",
             "id": "req_002",
             "result": {
                 "success": True,
@@ -537,7 +537,7 @@ def test_error_scenarios():
             "error": Exception("Property prop_999 not found"),
             "expected_response": {
                 "success": False,
-                "error_message": "Property prop_999 not found", 
+                "error_message": "Property prop_999 not found",
                 "error_code": "FINDB_PROCESSING_ERROR"
             }
         },
@@ -565,20 +565,20 @@ async def mock_findb_service(mock_settings, mock_async_session):
     """Mock FinDB service with database session."""
     with patch('src.findb_server.financial_database.create_async_engine'), \
          patch('src.findb_server.financial_database.async_sessionmaker') as mock_sessionmaker:
-        
+
         # Setup session manager mock
         mock_session_ctx = AsyncMock()
         mock_session_ctx.__aenter__.return_value = mock_async_session
         mock_session_ctx.__aexit__.return_value = None
         mock_sessionmaker.return_value = mock_session_ctx
-        
+
         # Import and create service
         from src.findb_server.financial_database import FinDBService
         service = FinDBService(mock_settings)
         service.async_session = mock_sessionmaker
-        
+
         yield service
-        
+
         # Cleanup
         await service.cleanup()
 

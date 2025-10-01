@@ -61,7 +61,7 @@ Content-Type: application/json
 ```json
 {
   "status": "healthy",
-  "service": "parser-server", 
+  "service": "parser-server",
   "version": "1.0.0",
   "timestamp": "2025-09-29T18:00:00Z",
   "dependencies": {
@@ -102,7 +102,7 @@ const initRequest = {
 ws.send(JSON.stringify(initRequest));
 ```
 
-### Parser Server WebSocket Connection  
+### Parser Server WebSocket Connection
 ```javascript
 const ws = new WebSocket('ws://localhost:8002/ws');
 
@@ -209,7 +209,7 @@ Content-Type: application/json
 
 {
   "jsonrpc": "2.0",
-  "id": "search_001", 
+  "id": "search_001",
   "method": "tools/call",
   "params": {
     "name": "vector_search",
@@ -248,7 +248,7 @@ pm.test("Complete Pipeline Test", function() {
     }, function(err, response) {
         const parseResult = response.json();
         const documentId = parseResult.document_id;
-        
+
         // 2. Index the parsed content
         pm.sendRequest({
             url: pm.environment.get("rag_server_url") + "/api/v1/index",
@@ -379,7 +379,7 @@ Promise.all(promises).then(responses => {
 - **Success**: Document parsed, text extracted, metadata returned
 
 ### Scenario 3: RAG Indexing & Search ✅
-- **Goal**: Test vector search functionality  
+- **Goal**: Test vector search functionality
 - **Tests**: Index content, perform similarity search
 - **Success**: Documents indexed, search returns relevant results
 
@@ -420,7 +420,7 @@ Promise.all(promises).then(responses => {
 ## 📋 Postman Collection Checklist
 
 - [ ] Environment configured with server URLs
-- [ ] Health check requests for both servers  
+- [ ] Health check requests for both servers
 - [ ] WebSocket connection tests
 - [ ] Document upload/parse requests
 - [ ] RAG indexing requests
@@ -437,7 +437,7 @@ Promise.all(promises).then(responses => {
 ### ✅ Expected Results:
 - **Health Checks**: Both servers return healthy status
 - **Document Processing**: Files parsed successfully with extracted content
-- **RAG Operations**: Content indexed and searchable  
+- **RAG Operations**: Content indexed and searchable
 - **MCP Protocol**: WebSocket connections established and responding
 - **Response Times**: < 5 seconds for processing, < 1 second for health checks
 - **Error Handling**: Graceful failures with proper error codes

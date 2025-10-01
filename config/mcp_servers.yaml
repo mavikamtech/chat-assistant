@@ -18,7 +18,7 @@ mcp:
           timeout_ms: 800
 
     parser:
-      name: "Document Parser Service"  
+      name: "Document Parser Service"
       url: ${MCP_PARSER_URL}
       url_local: ${MCP_PARSER_URL_LOCAL}
       timeout_ms: 30000
@@ -108,7 +108,7 @@ mcp:
     connection_timeout_ms: 5000
     keepalive_interval_ms: 30000
     max_message_size: 1048576  # 1MB
-    
+
   # Health check configuration
   health_check:
     enabled: true
@@ -123,7 +123,7 @@ mcp:
     tracing_enabled: true
     log_requests: true
     log_responses: false  # May contain sensitive data
-    
+
   # Error handling
   error_handling:
     max_retries: 3

@@ -75,14 +75,14 @@ docker run -p 8001:8001 \
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPENSEARCH_ENDPOINT` | OpenSearch cluster endpoint | `localhost:9200` |
-| `OPENSEARCH_INDEX_NAME` | Index name for documents | `mavik-documents` |
-| `BEDROCK_REGION` | AWS region for Bedrock | `us-east-1` |
-| `BEDROCK_EMBEDDING_MODEL` | Embedding model ID | `amazon.titan-embed-text-v2:0` |
-| `RAG_TIMEOUT_SECONDS` | Request timeout | `30` |
-| `LOG_LEVEL` | Logging level | `INFO` |
+| Variable                  | Description                 | Default                        |
+| ------------------------- | --------------------------- | ------------------------------ |
+| `OPENSEARCH_ENDPOINT`     | OpenSearch cluster endpoint | `localhost:9200`               |
+| `OPENSEARCH_INDEX_NAME`   | Index name for documents    | `mavik-documents`              |
+| `BEDROCK_REGION`          | AWS region for Bedrock      | `us-east-1`                    |
+| `BEDROCK_EMBEDDING_MODEL` | Embedding model ID          | `amazon.titan-embed-text-v2:0` |
+| `RAG_TIMEOUT_SECONDS`     | Request timeout             | `30`                           |
+| `LOG_LEVEL`               | Logging level               | `INFO`                         |
 
 ### Document Processing Settings
 
@@ -92,7 +92,7 @@ CHUNK_SIZE = 1000          # Characters per chunk
 CHUNK_OVERLAP = 200        # Overlap between chunks
 MAX_CHUNKS_PER_DOC = 500   # Limit chunks per document
 
-# Search configuration  
+# Search configuration
 DEFAULT_SEARCH_LIMIT = 10  # Default results per search
 MAX_SEARCH_LIMIT = 100     # Maximum results per search
 ```
@@ -117,7 +117,7 @@ Search documents using vector similarity and text matching.
 ```json
 {
   "id": "search_001",
-  "method": "rag/search", 
+  "method": "rag/search",
   "params": {
     "query": "commercial real estate investment",
     "limit": 10,
@@ -200,7 +200,7 @@ Remove all chunks for a document.
 **Request**:
 ```json
 {
-  "id": "delete_001", 
+  "id": "delete_001",
   "method": "rag/delete",
   "params": {
     "document_id": "doc_to_delete"
@@ -218,7 +218,7 @@ Process and index a document from S3.
 ```json
 {
   "id": "process_001",
-  "method": "rag/process_document", 
+  "method": "rag/process_document",
   "params": {
     "s3_bucket": "mavik-documents",
     "s3_key": "deals/property_om.pdf",
@@ -304,16 +304,16 @@ Combines vector and text search using:
 
 ### Benchmarks
 
-| Operation | Latency (p95) | Throughput |
-|-----------|---------------|------------|
-| Document Search | 150ms | 100 req/s |
-| Document Indexing | 2s | 10 docs/s |
-| Embedding Generation | 300ms | 50 req/s |
+| Operation            | Latency (p95) | Throughput |
+| -------------------- | ------------- | ---------- |
+| Document Search      | 150ms         | 100 req/s  |
+| Document Indexing    | 2s            | 10 docs/s  |
+| Embedding Generation | 300ms         | 50 req/s   |
 
 ### Optimization
 
 - **Connection Pooling**: Reuse OpenSearch connections
-- **Batch Processing**: Group embedding requests  
+- **Batch Processing**: Group embedding requests
 - **Caching**: Cache frequently accessed embeddings
 - **Parallel Processing**: Concurrent chunk processing
 
@@ -391,7 +391,7 @@ poetry run pytest --cov=src tests/
 # Format code
 poetry run ruff format src/ tests/
 
-# Lint code  
+# Lint code
 poetry run ruff check src/ tests/
 
 # Type checking

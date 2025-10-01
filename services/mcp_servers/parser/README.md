@@ -80,13 +80,13 @@ docker run -p 8002:8002 \
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `AWS_REGION` | AWS region for Textract | `us-east-1` |
-| `TEXTRACT_MAX_PAGES` | Maximum pages per document | `3000` |
-| `PARSER_TIMEOUT_SECONDS` | Request timeout | `300` |
-| `USE_LOCAL_FALLBACK` | Enable local parsing fallback | `true` |
-| `LOG_LEVEL` | Logging level | `INFO` |
+| Variable                 | Description                   | Default     |
+| ------------------------ | ----------------------------- | ----------- |
+| `AWS_REGION`             | AWS region for Textract       | `us-east-1` |
+| `TEXTRACT_MAX_PAGES`     | Maximum pages per document    | `3000`      |
+| `PARSER_TIMEOUT_SECONDS` | Request timeout               | `300`       |
+| `USE_LOCAL_FALLBACK`     | Enable local parsing fallback | `true`      |
+| `LOG_LEVEL`              | Logging level                 | `INFO`      |
 
 ### Parser Configuration
 
@@ -331,12 +331,12 @@ curl -X POST "http://localhost:8002/upload" \
 
 ### Supported Formats
 
-| Format | Extensions | Parser | Features |
-|--------|------------|--------|----------|
-| PDF | `.pdf` | Textract/PyPDF2 | Text, tables, forms, OCR |
-| Images | `.png`, `.jpg`, `.jpeg`, `.tiff`, `.gif`, `.bmp` | Textract | OCR, tables, forms |
-| Text | `.txt`, `.md`, `.rtf` | Local | Text extraction |
-| Office | `.docx`, `.doc`, `.pptx`, `.ppt` | Future | Text, structure |
+| Format | Extensions                                       | Parser          | Features                 |
+| ------ | ------------------------------------------------ | --------------- | ------------------------ |
+| PDF    | `.pdf`                                           | Textract/PyPDF2 | Text, tables, forms, OCR |
+| Images | `.png`, `.jpg`, `.jpeg`, `.tiff`, `.gif`, `.bmp` | Textract        | OCR, tables, forms       |
+| Text   | `.txt`, `.md`, `.rtf`                            | Local           | Text extraction          |
+| Office | `.docx`, `.doc`, `.pptx`, `.ppt`                 | Future          | Text, structure          |
 
 ### Processing Pipeline
 
@@ -384,12 +384,12 @@ curl -X POST "http://localhost:8002/upload" \
 
 ### Benchmarks
 
-| Operation | Textract | Local Parser |
-|-----------|----------|--------------|
-| PDF Text Extraction | 10s (5 pages) | 2s (5 pages) |
-| Table Detection | 15s (complex) | Not available |
-| Form Processing | 12s (2 forms) | Not available |
-| Image OCR | 8s (1 page) | Not available |
+| Operation           | Textract      | Local Parser  |
+| ------------------- | ------------- | ------------- |
+| PDF Text Extraction | 10s (5 pages) | 2s (5 pages)  |
+| Table Detection     | 15s (complex) | Not available |
+| Form Processing     | 12s (2 forms) | Not available |
+| Image OCR           | 8s (1 page)   | Not available |
 
 ### Optimization
 
