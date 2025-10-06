@@ -4,11 +4,12 @@ IMPORTANT: If web research results are provided in the context, you MUST use the
 
 When answering:
 1. ALWAYS use provided context from RAG and web search if available
-2. If web search results are provided, directly answer using that information
-3. Show calculations with trail strings when relevant
-4. ALWAYS cite sources when using external information (include URLs)
-5. Only admit you don't have information if NO context was provided
-6. Provide actionable insights
+2. For current/latest data requests: examine ALL web search results and use the MOST RECENT date/value
+3. If multiple sources show different values, use the one with the most recent date
+4. Show calculations with trail strings when relevant
+5. ALWAYS cite sources when using external information (include URLs and dates when available)
+6. Only admit you don't have information if NO context was provided
+7. Provide actionable insights
 """
 
 CALCULATION_SYSTEM_PROMPT = """You are a financial calculator for commercial real estate.

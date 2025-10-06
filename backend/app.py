@@ -41,10 +41,35 @@ async def chat_endpoint(
     # Upload file to S3 if provided
     file_url = None
     if file:
-        file_key = f"uploads/{uuid.uuid4()}/{file.filename}"
-        s3_client.upload_fileobj(file.file, 'mavik-uploads', file_key)
-        file_url = f"s3://mavik-uploads/{file_key}"
-        print(f"DEBUG: File uploaded to {file_url}")
+        try:
+            file_key = f"uploads/{uuid.uuid4()}/{file.filename}"
+
+            # Upload with proper settings for Textract access
+            s3_client.upload_fileobj(
+                file.file,
+                'mavik-uploads',
+                file_key,
+                ExtraArgs={
+                    'ContentType': 'application/pdf',
+                    'ServerSideEncryption': 'AES256'
+                }
+            )
+
+            file_url = f"s3://mavik-uploads/{file_key}"
+            print(f"DEBUG: File uploaded to {file_url}")
+
+            # Verify the file exists in S3
+            try:
+                s3_client.head_object(Bucket='mavik-uploads', Key=file_key)
+                print(f"DEBUG: Verified file exists in S3: {file_key}")
+            except Exception as e:
+                print(f"ERROR: File verification failed: {e}")
+
+        except Exception as e:
+            print(f"ERROR uploading file to S3: {e}")
+            import traceback
+            traceback.print_exc()
+            file_url = None
 
     # Run orchestrator
     initial_state = {

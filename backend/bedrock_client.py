@@ -7,14 +7,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class BedrockClient:
-    def __init__(self):
+    def __init__(self, model_id: Optional[str] = None):
         self.client = boto3.client(
             service_name='bedrock-runtime',
             region_name=os.getenv('AWS_REGION', 'us-east-1'),
             aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
         )
-        self.model_id = os.getenv('BEDROCK_MODEL_ID', 'anthropic.claude-3-sonnet-20240229-v1:0')
+        # Allow override, otherwise use default from env
+        self.model_id = model_id or os.getenv('BEDROCK_MODEL_ID', 'us.anthropic.claude-3-5-sonnet-20241022-v2:0')
+        self.haiku_model_id = os.getenv('BEDROCK_MODEL_ID_HAIKU', 'us.anthropic.claude-3-5-haiku-20241022-v1:0')
 
     async def invoke_claude(self, prompt: str, system: Optional[str] = None) -> str:
         """Invoke Claude for non-streaming responses"""
@@ -91,12 +93,23 @@ def parse_json(text: str) -> Dict[str, Any]:
 
     return json.loads(text)
 
-# Global instance
-bedrock_client = BedrockClient()
+# Global instances
+bedrock_client = BedrockClient()  # Sonnet for analysis
+bedrock_haiku_client = BedrockClient(model_id=os.getenv('BEDROCK_MODEL_ID_HAIKU'))  # Haiku for lightweight tasks
 
-async def invoke_claude(prompt: str, system: Optional[str] = None) -> str:
-    return await bedrock_client.invoke_claude(prompt, system)
+async def invoke_claude(prompt: str, system: Optional[str] = None, use_haiku: bool = False) -> str:
+    """
+    Invoke Claude with optional Haiku for lightweight tasks
+
+    Args:
+        prompt: User prompt
+        system: System instructions
+        use_haiku: If True, use Haiku (faster, cheaper); otherwise use Sonnet (more accurate)
+    """
+    client = bedrock_haiku_client if use_haiku else bedrock_client
+    return await client.invoke_claude(prompt, system)
 
 async def invoke_claude_streaming(prompt: str, system: Optional[str] = None) -> AsyncIterator[str]:
+    """Always use Sonnet for streaming (document analysis, pre-screening)"""
     async for chunk in bedrock_client.invoke_claude_streaming(prompt, system):
         yield chunk

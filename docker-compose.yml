@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID}
+      - S3_BUCKET_UPLOADS=${S3_BUCKET_UPLOADS}
+      - S3_BUCKET_REPORTS=${S3_BUCKET_REPORTS}
+      - OPENSEARCH_HOST=${OPENSEARCH_HOST}
+      - OPENSEARCH_PORT=${OPENSEARCH_PORT}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+    volumes:
+      - ./backend:/app
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+      - DISABLE_SECURITY_PLUGIN=true
+    ports:
+      - "9200:9200"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+
+volumes:
+  opensearch_data:

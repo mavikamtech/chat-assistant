@@ -27,9 +27,11 @@ class WebSearch:
                 payload = {
                     "api_key": self.api_key,
                     "query": query,
-                    "search_depth": "basic",
+                    "search_depth": "advanced",  # Use advanced for more current results
                     "include_answer": True,
-                    "max_results": max_results
+                    "max_results": max_results,
+                    "include_raw_content": False,
+                    "include_images": False
                 }
 
                 print(f"DEBUG: Tavily Search query: {query}")
