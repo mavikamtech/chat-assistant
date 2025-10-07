@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import MessageList from './message-list';
 
 interface Message {
@@ -11,6 +12,7 @@ interface Message {
 }
 
 export default function ChatInterface() {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -141,6 +143,20 @@ export default function ChatInterface() {
           </div>
         </div>
         <div className="border-t border-white/20 p-3">
+          <div className="mb-3">
+            <div className="text-xs text-white/70 mb-1">
+              {session?.user?.name || session?.user?.email}
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sign out
+            </button>
+          </div>
           <div className="text-xs text-gray-400 text-center">
             Mavik AI Assistant
             <br />

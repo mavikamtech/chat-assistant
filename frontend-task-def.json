@@ -21,6 +21,26 @@
         {
           "name": "NEXT_PUBLIC_BACKEND_URL",
           "value": "http://mavik-ai-alb-1958453690.us-east-2.elb.amazonaws.com/api"
+        },
+        {
+          "name": "NEXTAUTH_URL",
+          "value": "https://ai.mavik-ssot.com"
+        },
+        {
+          "name": "NEXTAUTH_SECRET",
+          "value": "efJ1XZdjSYi7uGxHDMTJRDfeeVvDvb/3TgGsjNMEiOs="
+        },
+        {
+          "name": "COGNITO_CLIENT_ID",
+          "value": "2p0o0a78q99dbd1rj9k5dg3r1j"
+        },
+        {
+          "name": "COGNITO_CLIENT_SECRET",
+          "value": "dvbp1j23eb20q5em5brim1li35mn6km50sd1leebvv7lqubvuag"
+        },
+        {
+          "name": "COGNITO_ISSUER",
+          "value": "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_fuVW3us9r"
         }
       ],
       "logConfiguration": {
