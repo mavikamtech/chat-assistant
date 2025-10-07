@@ -55,7 +55,8 @@ export default function ChatInterface() {
     setFile(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api/chat';
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       });
@@ -75,20 +76,25 @@ export default function ChatInterface() {
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
+            try {
+              const data = JSON.parse(line.slice(6));
+              console.log('Received data:', data);
 
-            if (data.type === 'tool') {
-              console.log('Tool:', data);
-              if (data.status === 'failed') {
-                assistantMessage += `\n\n⚠️ **Tool Error (${data.tool})**: ${data.summary}\n`;
+              if (data.type === 'tool') {
+                console.log('Tool:', data);
+                if (data.status === 'failed') {
+                  assistantMessage += `\n\n⚠️ **Tool Error (${data.tool})**: ${data.summary}\n`;
+                }
+              } else if (data.type === 'section') {
+                sections.push(data);
+                assistantMessage += `\n\n## ${data.title}\n\n${data.content}`;
+              } else if (data.type === 'answer') {
+                assistantMessage = data.content;
+              } else if (data.type === 'artifact') {
+                setDownloadUrl(data.url);
               }
-            } else if (data.type === 'section') {
-              sections.push(data);
-              assistantMessage += `\n\n## ${data.title}\n\n${data.content}`;
-            } else if (data.type === 'answer') {
-              assistantMessage = data.content;
-            } else if (data.type === 'artifact') {
-              setDownloadUrl(data.url);
+            } catch (e) {
+              console.error('Error parsing JSON:', e, 'Line:', line);
             }
           }
         }

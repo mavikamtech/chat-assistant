@@ -10,8 +10,8 @@
         "s3:ListBucket"
       ],
       "Resource": [
-        "arn:aws:s3:::mavikai-user-documents/*",
-        "arn:aws:s3:::mavikai-user-documents"
+        "arn:aws:s3:::mavik-uploads/*",
+        "arn:aws:s3:::mavik-uploads"
       ]
     }
   ]

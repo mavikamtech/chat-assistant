@@ -1,0 +1,88 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ECS", "CPUUtilization", {"stat": "Average", "label": "Backend CPU"}],
+          ["...", {"stat": "Average", "label": "Frontend CPU"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-2",
+        "title": "ECS CPU Utilization",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ECS", "MemoryUtilization", {"stat": "Average", "label": "Backend Memory"}],
+          ["...", {"stat": "Average", "label": "Frontend Memory"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-2",
+        "title": "ECS Memory Utilization",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ApplicationELB", "TargetResponseTime", {"stat": "Average"}],
+          [".", "RequestCount", {"stat": "Sum", "yAxis": "right"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-2",
+        "title": "ALB Performance",
+        "period": 300,
+        "yAxis": {
+          "left": {"label": "Response Time (s)"},
+          "right": {"label": "Request Count"}
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ApplicationELB", "HTTPCode_Target_2XX_Count", {"stat": "Sum", "label": "2xx Success"}],
+          [".", "HTTPCode_Target_4XX_Count", {"stat": "Sum", "label": "4xx Client Error"}],
+          [".", "HTTPCode_Target_5XX_Count", {"stat": "Sum", "label": "5xx Server Error"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-2",
+        "title": "HTTP Response Codes",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ApplicationELB", "HealthyHostCount", {"stat": "Average", "label": "Healthy Targets"}],
+          [".", "UnHealthyHostCount", {"stat": "Average", "label": "Unhealthy Targets"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-2",
+        "title": "Target Health",
+        "period": 300
+      }
+    },
+    {
+      "type": "log",
+      "properties": {
+        "query": "SOURCE '/ecs/mavik-backend'\n| fields @timestamp, @message\n| filter @message like /ERROR|Exception/\n| sort @timestamp desc\n| limit 20",
+        "region": "us-east-2",
+        "title": "Recent Backend Errors",
+        "stacked": false
+      }
+    }
+  ]
+}

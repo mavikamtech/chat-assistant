@@ -24,7 +24,7 @@
         },
         {
           "name": "S3_BUCKET",
-          "value": "mavikai-user-documents"
+          "value": "mavik-uploads"
         },
         {
           "name": "OPENSEARCH_ENDPOINT",
