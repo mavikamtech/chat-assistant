@@ -1,0 +1,82 @@
+{
+  "family": "mavik-ai-backend",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::167067248318:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::167067248318:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "167067248318.dkr.ecr.us-east-1.amazonaws.com/mavik-ai/backend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "AWS_REGION",
+          "value": "us-east-1"
+        },
+        {
+          "name": "S3_BUCKET_UPLOADS",
+          "value": "mavik-uploads"
+        },
+        {
+          "name": "S3_BUCKET_REPORTS",
+          "value": "mavik-reports"
+        },
+        {
+          "name": "BEDROCK_MODEL_ID",
+          "value": "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+        },
+        {
+          "name": "BEDROCK_MODEL_ID_HAIKU",
+          "value": "us.anthropic.claude-3-5-haiku-20241022-v1:0"
+        },
+        {
+          "name": "OPENSEARCH_HOST",
+          "value": "opensearch.mavik-ssot.internal"
+        },
+        {
+          "name": "OPENSEARCH_PORT",
+          "value": "9200"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "AWS_ACCESS_KEY_ID",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:167067248318:secret:mavik-ai/aws-credentials:AWS_ACCESS_KEY_ID::"
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:167067248318:secret:mavik-ai/aws-credentials:AWS_SECRET_ACCESS_KEY::"
+        },
+        {
+          "name": "TAVILY_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:167067248318:secret:mavik-ai/api-keys:TAVILY_API_KEY::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mavik-ai-backend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
