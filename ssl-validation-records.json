@@ -1,0 +1,30 @@
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_d5b0d79d997fe987e3fdded510121960.ai.mavik-ssot.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "_319670b5f4b18ca3d39a793a23a9d44f.xlfgrmvvlj.acm-validations.aws."
+          }
+        ]
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_0a7a8bc11f5f060c52efd5897fe147aa.mavik-ssot.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "_cd6184920b0080cb935f633b2879106e.xlfgrmvvlj.acm-validations.aws."
+          }
+        ]
+      }
+    }
+  ]
+}
