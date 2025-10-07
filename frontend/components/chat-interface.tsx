@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import MessageList from './message-list';
+import { getCurrentUser, signOut as cognitoSignOut } from '@/lib/cognito';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -12,13 +13,19 @@ interface Message {
 }
 
 export default function ChatInterface() {
-  const { data: session } = useSession();
+  const router = useRouter();
+  const user = getCurrentUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSignOut = () => {
+    cognitoSignOut();
+    router.push('/login');
+  };
 
   // Auto-resize textarea
   useEffect(() => {
@@ -145,10 +152,10 @@ export default function ChatInterface() {
         <div className="border-t border-white/20 p-3">
           <div className="mb-3">
             <div className="text-xs text-white/70 mb-1">
-              {session?.user?.name || session?.user?.email}
+              {user?.name || user?.email}
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+              onClick={handleSignOut}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
