@@ -6,10 +6,10 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
+        source: '/api/chat/:path*',
         destination: process.env.NEXT_PUBLIC_BACKEND_URL
-          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/:path*`
-          : 'http://localhost:8000/:path*',
+          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/:path*`
+          : 'http://localhost:8000/chat/:path*',
       },
     ]
   },
