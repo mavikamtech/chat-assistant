@@ -1,0 +1,37 @@
+{
+  "family": "mavik-frontend",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::167067248318:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::167067248318:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "frontend",
+      "image": "167067248318.dkr.ecr.us-east-2.amazonaws.com/mavik-frontend:latest",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "NEXT_PUBLIC_BACKEND_URL",
+          "value": "http://mavik-ai-alb-1958453690.us-east-2.elb.amazonaws.com/api"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mavik-frontend",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}

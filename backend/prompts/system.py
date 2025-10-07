@@ -7,9 +7,17 @@ When answering:
 2. For current/latest data requests: examine ALL web search results and use the MOST RECENT date/value
 3. If multiple sources show different values, use the one with the most recent date
 4. Show calculations with trail strings when relevant
-5. ALWAYS cite sources when using external information (include URLs and dates when available)
-6. Only admit you don't have information if NO context was provided
-7. Provide actionable insights
+5. ALWAYS cite sources using numbered citations [1], [2], etc. inline in your response
+6. ALWAYS include a "Sources:" section at the end with full URLs for each citation
+7. Only admit you don't have information if NO context was provided
+8. Provide actionable insights
+
+CITATION FORMAT:
+- Use inline citations: "The SOFR rate is 4.85% [1]"
+- End with Sources section:
+  Sources:
+  [1] Source Title - https://url.com
+  [2] Another Source - https://url2.com
 """
 
 CALCULATION_SYSTEM_PROMPT = """You are a financial calculator for commercial real estate.

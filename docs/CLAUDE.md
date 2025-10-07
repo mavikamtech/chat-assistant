@@ -397,11 +397,12 @@ S3_BUCKET_REPORTS=mavik-reports
 
 # Bedrock
 BEDROCK_MODEL_HAIKU=anthropic.claude-3-5-haiku-20241022-v1:0
-BEDROCK_MODEL_SONNET=anthropic.claude-sonnet-4-20250514-v1:0
+BEDROCK_MODEL_SONNET=anthropic.claude-3-sonnet-20240229-v1:0
 
 # OpenSearch (stub for now)
 OPENSEARCH_ENDPOINT=
 OPENSEARCH_INDEX=mavik-deals
+
 
 # App
 BACKEND_URL=http://localhost:8000

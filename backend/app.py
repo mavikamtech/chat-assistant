@@ -16,7 +16,9 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001"
+        "http://127.0.0.1:3001",
+        "http://ai.mavik-ssot.com",
+        "http://mavik-ai-alb-1935869446.us-east-2.elb.amazonaws.com"
     ],
     allow_credentials=True,
     allow_methods=["*"],

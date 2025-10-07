@@ -25,7 +25,7 @@ class BedrockClient:
 
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 4096,
+            "max_tokens": 32000,  # Increased for comprehensive analysis
             "messages": messages,
             "temperature": 0.7
         }
@@ -53,7 +53,7 @@ class BedrockClient:
 
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 4096,
+            "max_tokens": 32000,  # Increased for comprehensive analysis (pre-screening reports)
             "messages": messages,
             "temperature": 0.7
         }

@@ -1,0 +1,11 @@
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["https://ai.mavik-ssot.com", "http://localhost:3000"],
+      "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+      "AllowedHeaders": ["*"],
+      "MaxAgeSeconds": 3000,
+      "ExposeHeaders": ["ETag"]
+    }
+  ]
+}

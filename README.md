@@ -2,7 +2,13 @@
 
 A ChatGPT-style AI assistant for commercial real estate deal analysis, powered by AWS Bedrock Claude and LangGraph.
 
-## Features
+## 🚀 Quick Deploy
+
+**Deploy to production in 10 minutes**: See [QUICK_START.md](./QUICK_START.md)
+
+**Recommended domain**: `ai.mavik-ssot.com` (subdomain deployment)
+
+## ✨ Features
 
 - **Dynamic Routing**: Intelligently routes requests based on user intent
 - **PDF Analysis**: Upload offering memorandums for comprehensive pre-screening
@@ -10,6 +16,8 @@ A ChatGPT-style AI assistant for commercial real estate deal analysis, powered b
 - **Financial Calculations**: Automatic DSCR, LTV, Cap Rate calculations with trail strings
 - **Word Export**: Download structured analysis reports
 - **Streaming Responses**: Real-time updates as the analysis progresses
+- **Web Search with Citations**: Tavily-powered search with proper source attribution ⭐ NEW
+- **Complete Multi-Section Analysis**: All 10+ sections generated (32K token limit) ⭐ NEW
 
 ## Architecture
 
@@ -64,7 +72,8 @@ npm install
 **Terminal 1 - Backend:**
 ```bash
 cd backend
-python run.py
+
+
 ```
 
 **Terminal 2 - Frontend:**
@@ -244,9 +253,42 @@ Edit prompt templates in `backend/prompts/`:
 - `pre_screening.py` - Full OM analysis
 - `system.py` - System instructions for Q&A
 
-## Deployment
+## 🌐 Deployment
 
-See [DEPLOY.md](./DEPLOY.md) for deployment instructions.
+### Production Deployment (mavik-ssot.com)
+
+**Quick Start**: [QUICK_START.md](./QUICK_START.md) - Deploy in 10 minutes
+
+**Detailed Guide**: [DEPLOYMENT.md](./DEPLOYMENT.md) - Complete deployment options
+
+**DNS Setup**: [DNS_SETUP.md](./DNS_SETUP.md) - Configure subdomain or path-based routing
+
+**Summary**: [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md) - Overview of all changes
+
+### Deployment Scripts
+
+- `setup-server.sh` - Initial server setup (Docker, Nginx, SSL)
+- `deploy.sh` - Deploy/update application
+- `monitor.sh` - Health monitoring and diagnostics
+
+### Recommended Setup
+
+Deploy on subdomain: **ai.mavik-ssot.com**
+
+```bash
+# 1. Setup server
+./setup-server.sh
+
+# 2. Configure .env
+cp .env.example .env
+# Edit with your credentials
+
+# 3. Deploy
+./deploy.sh
+
+# 4. Monitor
+./monitor.sh
+```
 
 ## Troubleshooting
 

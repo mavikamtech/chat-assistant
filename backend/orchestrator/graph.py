@@ -216,11 +216,13 @@ async def generate_response(state: OrchestratorState) -> OrchestratorState:
     intent = state.get("intent", "question")
 
     if intent == "pre_screen":
-        # Generate analysis using Claude Sonnet - let it structure the response naturally
+        # Generate analysis using Claude Sonnet with STREAMING for long responses
         prompt = build_pre_screening_prompt(state)
 
-        # Use Claude to generate the complete analysis
-        full_response = await invoke_claude(prompt, SYSTEM_INSTRUCTIONS)
+        # Use streaming to ensure complete analysis is generated
+        full_response = ""
+        async for chunk in invoke_claude_streaming(prompt, SYSTEM_INSTRUCTIONS):
+            full_response += chunk
 
         # Return as a single answer instead of forced sections
         state["answer"] = full_response
@@ -311,6 +313,16 @@ INSTRUCTIONS:
     else:
         # Build full pre-screening analysis prompt
         prompt = PRE_SCREENING_PROMPT + "\n\n"
+
+        # Count sections requested by the user
+        user_msg = state['user_message']
+        import re
+        section_matches = re.findall(r'^\d+[\.\)]\s+[A-Z]', user_msg, re.MULTILINE)
+        num_sections = len(section_matches)
+
+        if num_sections > 0:
+            prompt += f"⚠️ IMPORTANT: The user has requested {num_sections} numbered sections. You MUST complete ALL {num_sections} sections in full detail. Do not stop early.\n\n"
+
         prompt += f"USER REQUEST:\n{state['user_message']}\n\n"
 
         if state.get("pdf_text"):
@@ -335,18 +347,26 @@ INSTRUCTIONS:
             prompt += "\n"
 
         if state.get("web_results"):
-            prompt += "WEB RESEARCH RESULTS:\n"
-            for result in state["web_results"][:3]:
+            prompt += "WEB RESEARCH RESULTS (cite these sources in your response):\n"
+            for i, result in enumerate(state["web_results"][:3], 1):
                 title = result.get('title', 'No title')
                 content = result.get('content', '')[:300]
                 url = result.get('url', '')
-                prompt += f"- {title}\n  URL: {url}\n  Content: {content}\n\n"
+                prompt += f"[{i}] {title}\n"
+                if url:
+                    prompt += f"    URL: {url}\n"
+                prompt += f"    Content: {content}\n\n"
+            prompt += "NOTE: Include inline citations [1], [2], etc. and a Sources section at the end.\n\n"
 
         if state.get("finance_calcs"):
             prompt += "PRE-CALCULATED FINANCIAL METRICS:\n"
             for metric, data in state["finance_calcs"].items():
                 prompt += f"- {metric}: {data.get('trail', '')}\n"
             prompt += "\n"
+
+        # Final reminder for structured analyses
+        if num_sections > 0:
+            prompt += f"\n⚠️ FINAL REMINDER: Complete ALL {num_sections} sections requested above. Do not skip any sections. Provide comprehensive analysis for each one.\n"
 
     return prompt
 
@@ -391,12 +411,13 @@ def build_qa_prompt(state: OrchestratorState) -> str:
     # Web search results first (most important for current info)
     if state.get("web_results"):
         prompt += "=== LATEST WEB SEARCH RESULTS (USE THESE AS PRIMARY SOURCE) ===\n"
-        prompt += "IMPORTANT: These are the most recent search results. Use this data for your answer.\n\n"
+        prompt += "IMPORTANT: These are the most recent search results. Use this data for your answer.\n"
+        prompt += "Each source below has a citation number [1], [2], etc. You MUST include these citation numbers in your response.\n\n"
         for i, result in enumerate(state["web_results"][:5], 1):
-            prompt += f"\n{i}. {result.get('title', 'No title')}\n"
+            prompt += f"\n[{i}] {result.get('title', 'No title')}\n"
             if result.get('url'):
-                prompt += f"   Source URL: {result.get('url')}\n"
-            prompt += f"   Content: {result.get('content', '')}\n"
+                prompt += f"    URL: {result.get('url')}\n"
+            prompt += f"    Content: {result.get('content', '')}\n"
         prompt += "\n=== END WEB SEARCH RESULTS ===\n\n"
 
     if state.get("rag_results"):
@@ -414,10 +435,16 @@ def build_qa_prompt(state: OrchestratorState) -> str:
     prompt += "INSTRUCTIONS:\n"
     prompt += "1. PRIORITIZE the web search results above - they contain the MOST CURRENT information\n"
     prompt += "2. Extract exact numbers and rates from the web results\n"
-    prompt += "3. Cite sources with URLs when available\n"
-    prompt += "4. Show all calculations with formulas\n"
-    prompt += "5. Be direct and concise\n"
-    prompt += "6. If web results are provided, DO NOT say you lack information\n"
+    prompt += "3. ALWAYS add citation numbers [1], [2], etc. inline when using information from sources\n"
+    prompt += "4. At the end of your response, include a 'Sources:' section listing all citations with their URLs\n"
+    prompt += "5. Show all calculations with formulas\n"
+    prompt += "6. Be direct and concise\n"
+    prompt += "7. If web results are provided, DO NOT say you lack information\n"
+    prompt += "\nCITATION FORMAT EXAMPLE:\n"
+    prompt += "The current SOFR rate is 4.85% [1]. This represents an increase from last month [2].\n\n"
+    prompt += "Sources:\n"
+    prompt += "[1] Federal Reserve Bank - https://example.com/sofr\n"
+    prompt += "[2] Bloomberg Markets - https://example.com/rates\n"
 
     return prompt
 

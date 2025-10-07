@@ -4,6 +4,8 @@ from bedrock_client import invoke_claude, parse_json
 async def classify_intent(state: OrchestratorState) -> OrchestratorState:
     """Use Claude to classify user intent and decide which tools to use"""
 
+    print(f"DEBUG: Full user prompt: {state['user_message']}")
+    print(f"DEBUG: User prompt length: {len(state['user_message'])} characters")
     print(f"DEBUG: classify_intent() called with message: {state['user_message'][:100]}")
 
     # Simple keyword-based classification for now (instead of calling Claude)

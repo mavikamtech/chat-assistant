@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(aws elbv2 create-target-group:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

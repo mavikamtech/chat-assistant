@@ -1,0 +1,16 @@
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "ai.mavik-ssot.com",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z3AADJGX6KTTL2",
+          "DNSName": "mavik-ai-alb-1935869446.us-east-2.elb.amazonaws.com",
+          "EvaluateTargetHealth": true
+        }
+      }
+    }
+  ]
+}

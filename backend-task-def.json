@@ -1,0 +1,55 @@
+{
+  "family": "mavik-backend",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::167067248318:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::167067248318:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "167067248318.dkr.ecr.us-east-2.amazonaws.com/mavik-backend:latest",
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "AWS_REGION",
+          "value": "us-east-2"
+        },
+        {
+          "name": "S3_BUCKET",
+          "value": "mavikai-user-documents"
+        },
+        {
+          "name": "OPENSEARCH_ENDPOINT",
+          "value": ""
+        }
+      ],
+      "secrets": [
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:167067248318:secret:mavik-api-keys-I155zg:ANTHROPIC_API_KEY::"
+        },
+        {
+          "name": "TAVILY_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:167067248318:secret:mavik-api-keys-I155zg:TAVILY_API_KEY::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mavik-backend",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}
