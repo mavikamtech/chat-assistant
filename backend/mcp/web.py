@@ -33,24 +33,24 @@ class WebSearch:
                 # Enhance query for time-sensitive searches
                 enhanced_query = query
                 if time_sensitive:
-                    # Add temporal keywords to prioritize recent results
-                    enhanced_query = f"{query} latest current today 2025"
+                    # Add temporal keywords and specific sites for financial data
+                    enhanced_query = f"{query} latest current 2025 October"
 
                 payload = {
                     "api_key": self.api_key,
                     "query": enhanced_query,
                     "search_depth": "advanced",  # Use advanced for more comprehensive results
                     "include_answer": True,
-                    "max_results": max_results,
+                    "max_results": max_results * 2 if time_sensitive else max_results,  # Get more results to filter
                     "include_raw_content": False,
                     "include_images": False,
-                    "days": 7 if time_sensitive else None  # Limit to past 7 days for time-sensitive queries
+                    "include_domains": ["sofrrate.com", "newyorkfed.org", "ycharts.com", "fred.stlouisfed.org"] if "sofr" in query.lower() or "rate" in query.lower() else None
                 }
 
                 # Remove None values
                 payload = {k: v for k, v in payload.items() if v is not None}
 
-                print(f"DEBUG: Tavily Search query: {query}")
+                print(f"DEBUG: Tavily Search query: {enhanced_query} (time_sensitive={time_sensitive})")
 
                 response = requests.post(
                     self.base_url,

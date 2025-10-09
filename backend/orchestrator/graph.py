@@ -117,6 +117,7 @@ async def search_web(state: OrchestratorState) -> OrchestratorState:
 
         # Use time_sensitive flag for real-time queries
         time_sensitive = state.get("time_sensitivity") == "real_time"
+        print(f"DEBUG: time_sensitivity={state.get('time_sensitivity')}, time_sensitive={time_sensitive}")
         results = await web.search_web_sources(queries=queries, time_sensitive=time_sensitive)
         state["web_results"] = results
 
