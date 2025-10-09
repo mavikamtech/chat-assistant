@@ -9,20 +9,11 @@ COPY package*.json ./
 # Install ALL dependencies (including devDependencies needed for build)
 RUN npm ci
 
-# Copy source code
+# Copy environment files and source code
+COPY .env.production ./
 COPY . .
 
-# Accept build arguments for Next.js public environment variables
-ARG NEXT_PUBLIC_COGNITO_USER_POOL_ID
-ARG NEXT_PUBLIC_COGNITO_CLIENT_ID
-ARG NEXT_PUBLIC_BACKEND_URL
-
-# Set as environment variables for the build
-ENV NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID \
-    NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID \
-    NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
-
-# Build Next.js app
+# Build Next.js app (will use .env.production)
 RUN npm run build
 
 # Production stage
