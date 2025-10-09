@@ -12,8 +12,14 @@ class WebSearch:
         self.enabled = bool(self.api_key)
         self.base_url = "https://api.tavily.com/search"
 
-    async def search_web_sources(self, queries: List[str], max_results: int = 5) -> List[Dict[str, Any]]:
-        """Search web using Tavily AI API (FREE, no credit card needed!)"""
+    async def search_web_sources(self, queries: List[str], max_results: int = 5, time_sensitive: bool = False) -> List[Dict[str, Any]]:
+        """Search web using Tavily AI API with optional time sensitivity
+
+        Args:
+            queries: List of search queries
+            max_results: Maximum results per query
+            time_sensitive: If True, prioritize very recent results (past week/days)
+        """
 
         if not self.enabled:
             print("WARNING: Tavily API key not found. Set TAVILY_API_KEY in .env")
@@ -24,15 +30,25 @@ class WebSearch:
 
         for query in queries:
             try:
+                # Enhance query for time-sensitive searches
+                enhanced_query = query
+                if time_sensitive:
+                    # Add temporal keywords to prioritize recent results
+                    enhanced_query = f"{query} latest current today 2025"
+
                 payload = {
                     "api_key": self.api_key,
-                    "query": query,
-                    "search_depth": "advanced",  # Use advanced for more current results
+                    "query": enhanced_query,
+                    "search_depth": "advanced",  # Use advanced for more comprehensive results
                     "include_answer": True,
                     "max_results": max_results,
                     "include_raw_content": False,
-                    "include_images": False
+                    "include_images": False,
+                    "days": 7 if time_sensitive else None  # Limit to past 7 days for time-sensitive queries
                 }
+
+                # Remove None values
+                payload = {k: v for k, v in payload.items() if v is not None}
 
                 print(f"DEBUG: Tavily Search query: {query}")
 
@@ -87,5 +103,5 @@ class WebSearch:
 # Global instance
 web_search = WebSearch()
 
-async def search_web_sources(queries: List[str], max_results: int = 3) -> List[Dict[str, Any]]:
-    return await web_search.search_web_sources(queries, max_results)
+async def search_web_sources(queries: List[str], max_results: int = 3, time_sensitive: bool = False) -> List[Dict[str, Any]]:
+    return await web_search.search_web_sources(queries, max_results, time_sensitive)
