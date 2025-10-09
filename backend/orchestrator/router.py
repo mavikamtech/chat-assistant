@@ -1,67 +1,117 @@
 from orchestrator.state import OrchestratorState
 from bedrock_client import invoke_claude, parse_json
+from datetime import datetime
 
 async def classify_intent(state: OrchestratorState) -> OrchestratorState:
-    """Use Claude to classify user intent and decide which tools to use"""
+    """Use Claude to classify user intent with temporal awareness and decide which tools to use"""
 
     print(f"DEBUG: Full user prompt: {state['user_message']}")
     print(f"DEBUG: User prompt length: {len(state['user_message'])} characters")
     print(f"DEBUG: classify_intent() called with message: {state['user_message'][:100]}")
 
-    # Simple keyword-based classification for now (instead of calling Claude)
-    # This is more reliable and faster
-    message_lower = state['user_message'].lower()
+    user_message = state['user_message']
+    has_file = bool(state.get('file_url'))
+    current_date = datetime.now().strftime("%Y-%m-%d")
 
-    # Default intent
-    intent = "question"
-    requires_pdf = False
-    selected_tools = []
+    # Use Claude (Haiku for speed) to classify intent with temporal awareness
+    classification_prompt = f"""Analyze this user query and classify the intent with temporal awareness.
 
-    # Check if user wants a Word document output
-    wants_document = any(keyword in message_lower for keyword in [
-        'word document', 'downloadable', 'download', 'document', '.docx', 'formatted as',
-        'report', 'analysis', 'memo', 'generate', 'create a'
-    ])
+Current date: {current_date}
+User has attached a PDF: {has_file}
+User query: "{user_message}"
 
-    # Check for EXPLICIT pre-screening request (must mention these specific keywords)
-    if state.get('file_url') and any(keyword in message_lower for keyword in [
-        'pre-screen', 'pre screen', 'prescreening', 'full analysis',
-        'complete analysis', 'investment analysis', 'underwriting analysis',
-        'analyze this om', 'analyze this offering memorandum', 'review the attached',
-        'analyze', 'analysis'
-    ]):
-        intent = "pre_screen"
-        requires_pdf = True
-        # Include report tool if document output is requested or it's an analysis
-        selected_tools = ["doc_parser", "rag", "web", "finance"]
-        if wants_document:
-            selected_tools.append("report")
+Classify the intent and determine which tools are needed. Consider temporal context carefully:
+- "past 10 days", "last week", "recent" = real-time data → use web search
+- "2023 data", "historical", "archived" = old data → use database/RAG
+- "calculate DSCR" = financial calculation → use finance tool
+- PDF attached + analysis request = document analysis
 
-    # PDF attached but asking a specific question -> treat as document Q&A
-    elif state.get('file_url'):
-        intent = "document_qa"
-        requires_pdf = True
-        selected_tools = ["doc_parser"]  # Just parse the PDF and answer the question
+Intent types:
+1. pre_screen - Full property/deal analysis (requires PDF)
+2. document_qa - Specific question about attached PDF
+3. market_research - Real-time market data (past days/weeks/months)
+4. historical_query - Historical data from database (specific past years)
+5. calculation - Financial calculations (DSCR, LTV, IRR, etc.)
+6. general_question - General knowledge question
 
-    # Check for current/latest information requests (trigger web search)
-    elif any(keyword in message_lower for keyword in ['latest', 'current', 'recent', 'today', 'now', '2025', '2024', '2023']):
-        intent = "research"
-        selected_tools = ["web"]
+Available tools:
+- doc_parser: Parse PDF documents
+- rag: Search historical database/knowledge base
+- web: Real-time web search for current data
+- finance: Financial calculations
+- report: Generate Word document output
 
-    # Check for calculation requests
-    elif any(keyword in message_lower for keyword in ['calculate', 'dscr', 'ltv', 'cap rate', 'irr', 'noi', 'debt service']):
-        intent = "calculation"
-        selected_tools = ["finance"]
+CRITICAL:
+- Queries about "past 10 days", "last week", "recent trends" should use WEB tool (not RAG)
+- Queries about "2023", "last year's data", "historical" should use RAG tool
+- If user wants downloadable/Word document output, include report tool
 
-    # Default: just a question
-    else:
-        intent = "question"
-        selected_tools = []
+Return JSON with this exact structure:
+{{
+  "intent": "intent_type",
+  "selected_tools": ["tool1", "tool2"],
+  "time_sensitivity": "real_time|historical|none",
+  "requires_pdf": true/false,
+  "wants_document_output": true/false,
+  "reasoning": "brief explanation"
+}}"""
 
-    print(f"DEBUG: Classified intent={intent}, requires_pdf={requires_pdf}, selected_tools={selected_tools}")
+    try:
+        # Use Haiku for fast classification
+        response = await invoke_claude(classification_prompt, use_haiku=True)
+        print(f"DEBUG: Claude classification response: {response}")
+
+        # Parse the JSON response
+        classification = parse_json(response)
+
+        intent = classification.get("intent", "general_question")
+        selected_tools = classification.get("selected_tools", [])
+        time_sensitivity = classification.get("time_sensitivity", "none")
+        requires_pdf = classification.get("requires_pdf", False)
+        wants_document_output = classification.get("wants_document_output", False)
+
+        print(f"DEBUG: Classified intent={intent}, time_sensitivity={time_sensitivity}, requires_pdf={requires_pdf}, selected_tools={selected_tools}")
+
+    except Exception as e:
+        # Fallback to simple keyword-based classification if Claude fails
+        print(f"ERROR: Classification failed: {e}. Falling back to keyword matching.")
+
+        message_lower = user_message.lower()
+
+        # Fallback logic with temporal awareness
+        if has_file and any(kw in message_lower for kw in ['analyze', 'analysis', 'pre-screen', 'review']):
+            intent = "pre_screen"
+            selected_tools = ["doc_parser", "rag", "web", "finance"]
+            requires_pdf = True
+            wants_document_output = any(kw in message_lower for kw in ['document', 'report', 'download', '.docx'])
+        elif has_file:
+            intent = "document_qa"
+            selected_tools = ["doc_parser"]
+            requires_pdf = True
+            wants_document_output = False
+        # Temporal awareness in fallback
+        elif any(kw in message_lower for kw in ['past', 'last', 'days', 'weeks', 'recent', 'current', 'latest', 'now']):
+            intent = "market_research"
+            selected_tools = ["web"]
+            requires_pdf = False
+            wants_document_output = False
+        elif any(kw in message_lower for kw in ['calculate', 'dscr', 'ltv', 'cap rate', 'irr']):
+            intent = "calculation"
+            selected_tools = ["finance"]
+            requires_pdf = False
+            wants_document_output = False
+        else:
+            intent = "general_question"
+            selected_tools = []
+            requires_pdf = False
+            wants_document_output = False
+
+        time_sensitivity = "none"
 
     state["intent"] = intent
     state["requires_pdf"] = requires_pdf
     state["selected_tools"] = selected_tools
+    state["time_sensitivity"] = time_sensitivity
+    state["wants_document_output"] = wants_document_output
 
     return state

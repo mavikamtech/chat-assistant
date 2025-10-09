@@ -8,9 +8,11 @@ class OrchestratorState(TypedDict):
     file_url: Optional[str]
 
     # Routing
-    intent: str  # "pre_screen", "question", "calculation", "research"
+    intent: str  # "pre_screen", "document_qa", "market_research", "historical_query", "calculation", "general_question"
     requires_pdf: bool
     selected_tools: List[str]
+    time_sensitivity: Optional[str]  # "real_time", "historical", "none"
+    wants_document_output: Optional[bool]
 
     # Tool outputs
     pdf_text: Optional[str]
