@@ -13,6 +13,9 @@ RUN npm ci
 COPY .env.production ./
 COPY . .
 
+# Create public directory if it doesn't exist
+RUN mkdir -p public
+
 # Build Next.js app (will use .env.production)
 RUN npm run build
 
@@ -32,7 +35,7 @@ RUN addgroup --system --gid 1001 nodejs \
 # Copy built assets from builder
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Set ownership
 RUN chown -R nextjs:nodejs /app
