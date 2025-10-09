@@ -12,13 +12,6 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Set build-time environment variables (placeholders for Next.js build)
-ENV NEXTAUTH_URL=https://ai.mavik-ssot.com \
-    NEXTAUTH_SECRET=build-time-placeholder \
-    COGNITO_CLIENT_ID=build-time-placeholder \
-    COGNITO_CLIENT_SECRET=build-time-placeholder \
-    COGNITO_ISSUER=build-time-placeholder
-
 # Build Next.js app
 RUN npm run build
 
