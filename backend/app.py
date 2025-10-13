@@ -96,34 +96,58 @@ async def chat_endpoint(
 
     async def generate():
         try:
-            # LangGraph's astream yields dicts with node names as keys
-            async for chunk in graph.astream(initial_state):
-                # chunk is a dict like {'node_name': state_dict}
-                for node_name, state_update in chunk.items():
-                    print(f"DEBUG: Node '{node_name}' returned state")
+            print(f"DEBUG: ===== STARTING NEW REQUEST =====")
+            print(f"DEBUG: Message: {message[:100]}...")
+            print(f"DEBUG: File URL: {file_url}")
 
-                    if not isinstance(state_update, dict):
-                        continue
+            # Use astream to get updates as each node completes (prevents HTTP timeout)
+            print(f"DEBUG: Calling graph.astream()")
 
-                    # Stream tool calls
-                    if "tool_calls" in state_update and state_update["tool_calls"]:
-                        for tool_call in state_update["tool_calls"]:
-                            yield f"data: {json.dumps({'type': 'tool', **tool_call})}\n\n"
+            # Track tool calls and final state components
+            tool_calls_sent = set()
+            final_state = None
 
-                    # Stream sections (for pre-screening)
-                    if "sections" in state_update and state_update["sections"]:
-                        for section in state_update["sections"]:
-                            yield f"data: {json.dumps({'type': 'section', **section})}\n\n"
+            async for event in graph.astream(initial_state):
+                print(f"DEBUG: Stream event received: {list(event.keys())}")
 
-                    # Stream answer (for Q&A)
-                    if "answer" in state_update and state_update["answer"]:
-                        print(f"DEBUG: Sending answer from node '{node_name}'")
-                        yield f"data: {json.dumps({'type': 'answer', 'content': state_update['answer']})}\n\n"
+                # Get the latest state from the event
+                for node_name, node_state in event.items():
+                    final_state = node_state
+                    print(f"DEBUG: Node '{node_name}' completed")
 
-                    # Stream DOCX URL
-                    if "docx_url" in state_update and state_update["docx_url"]:
-                        yield f"data: {json.dumps({'type': 'artifact', 'url': state_update['docx_url']})}\n\n"
+                    # Stream new tool calls as they're added
+                    if "tool_calls" in node_state:
+                        for i, tool_call in enumerate(node_state["tool_calls"]):
+                            tool_key = f"{tool_call.get('tool', 'unknown')}_{i}"
+                            if tool_key not in tool_calls_sent:
+                                print(f"DEBUG: Streaming tool call: {tool_call}")
+                                yield f"data: {json.dumps({'type': 'tool', **tool_call})}\n\n"
+                                tool_calls_sent.add(tool_key)
 
+                    # Send heartbeat to keep connection alive during long operations
+                    yield f"data: {json.dumps({'type': 'progress', 'node': node_name})}\n\n"
+
+            print(f"DEBUG: Graph execution completed")
+
+            # Stream final outputs if present
+            if final_state:
+                # Stream sections (for pre-screening)
+                if "sections" in final_state and final_state["sections"]:
+                    print(f"DEBUG: Streaming {len(final_state['sections'])} sections")
+                    for section in final_state["sections"]:
+                        yield f"data: {json.dumps({'type': 'section', **section})}\n\n"
+
+                # Stream answer (for Q&A)
+                if "answer" in final_state and final_state["answer"]:
+                    print(f"DEBUG: Streaming answer (length: {len(final_state['answer'])} chars)")
+                    yield f"data: {json.dumps({'type': 'answer', 'content': final_state['answer']})}\n\n"
+
+                # Stream DOCX URL
+                if "docx_url" in final_state and final_state["docx_url"]:
+                    print(f"DEBUG: Streaming docx_url")
+                    yield f"data: {json.dumps({'type': 'artifact', 'url': final_state['docx_url']})}\n\n"
+
+            print(f"DEBUG: Sending done event")
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
         except Exception as e:
@@ -133,6 +157,7 @@ async def chat_endpoint(
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
 
 @app.get("/health")
 async def health():

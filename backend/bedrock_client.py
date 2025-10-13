@@ -25,7 +25,7 @@ class BedrockClient:
 
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 32000,  # Increased for comprehensive analysis
+            "max_tokens": 50000,  # Increased for comprehensive extraction (was 32000)
             "messages": messages,
             "temperature": 0.7
         }
@@ -53,7 +53,7 @@ class BedrockClient:
 
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 32000,  # Increased for comprehensive analysis (pre-screening reports)
+            "max_tokens": 50000,  # Increased for comprehensive extraction (was 32000)
             "messages": messages,
             "temperature": 0.7
         }
@@ -79,7 +79,7 @@ class BedrockClient:
                             yield delta.get('text', '')
 
 def parse_json(text: str) -> Dict[str, Any]:
-    """Parse JSON from Claude's response, handling markdown code blocks"""
+    """Parse JSON from Claude's response, handling markdown code blocks and extra text"""
 
     # Try to extract JSON from markdown code blocks
     if '```json' in text:
@@ -91,7 +91,34 @@ def parse_json(text: str) -> Dict[str, Any]:
         end = text.find('```', start)
         text = text[start:end].strip()
 
-    return json.loads(text)
+    # Handle cases where Claude returns JSON followed by explanation text
+    # Find the first complete JSON object by tracking braces
+    try:
+        # Try parsing the entire text first
+        return json.loads(text)
+    except json.JSONDecodeError as e:
+        # If that fails, try to extract just the JSON object
+        # Find the first { and matching }
+        start_idx = text.find('{')
+        if start_idx == -1:
+            raise e
+
+        brace_count = 0
+        end_idx = start_idx
+        for i in range(start_idx, len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+                if brace_count == 0:
+                    end_idx = i + 1
+                    break
+
+        if brace_count != 0:
+            raise e
+
+        json_text = text[start_idx:end_idx]
+        return json.loads(json_text)
 
 # Global instances
 bedrock_client = BedrockClient()  # Sonnet for analysis
@@ -113,3 +140,4 @@ async def invoke_claude_streaming(prompt: str, system: Optional[str] = None) -> 
     """Always use Sonnet for streaming (document analysis, pre-screening)"""
     async for chunk in bedrock_client.invoke_claude_streaming(prompt, system):
         yield chunk
+

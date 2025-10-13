@@ -64,10 +64,13 @@ export default function ChatInterface() {
     setFile(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api/chat';
+      // Use direct backend URL to avoid Next.js proxy timeout for long requests
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/chat';
       const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
+        // No timeout for long-running document processing
+        signal: undefined,
       });
 
       const reader = response.body?.getReader();
@@ -101,6 +104,9 @@ export default function ChatInterface() {
                 assistantMessage = data.content;
               } else if (data.type === 'artifact') {
                 setDownloadUrl(data.url);
+              } else if (data.type === 'progress') {
+                // Heartbeat to keep connection alive - just log it
+                console.log('Progress:', data.node);
               }
             } catch (e) {
               console.error('Error parsing JSON:', e, 'Line:', line);

@@ -1,0 +1,43 @@
+{
+  "family": "mavik-frontend-staging",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::167067248318:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::167067248318:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "frontend",
+      "image": "167067248318.dkr.ecr.us-east-2.amazonaws.com/mavik-frontend-staging:latest",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "NEXT_PUBLIC_API_URL",
+          "value": "https://staging.ai.mavik-ssot.com/api/chat"
+        },
+        {
+          "name": "NEXT_PUBLIC_COGNITO_USER_POOL_ID",
+          "value": "us-east-2_fuVW3us9r"
+        },
+        {
+          "name": "NEXT_PUBLIC_COGNITO_CLIENT_ID",
+          "value": "2p0o0a78q99dbd1rj9k5dg3r1j"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mavik-frontend-staging",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

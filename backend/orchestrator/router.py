@@ -2,12 +2,27 @@ from orchestrator.state import OrchestratorState
 from bedrock_client import invoke_claude, parse_json
 from datetime import datetime
 
+def safe_print(message: str):
+    """Print message with safe Unicode handling for Windows console"""
+    try:
+        # Try to encode to the console's encoding first
+        import sys
+        if hasattr(sys.stdout, 'encoding') and sys.stdout.encoding:
+            safe_msg = message.encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding)
+            print(safe_msg)
+        else:
+            # Fallback to ASCII
+            print(message.encode('ascii', 'replace').decode('ascii'))
+    except Exception:
+        # Final fallback - just remove non-ASCII
+        print(''.join(char if ord(char) < 128 else '?' for char in message))
+
 async def classify_intent(state: OrchestratorState) -> OrchestratorState:
     """Use Claude to classify user intent with temporal awareness and decide which tools to use"""
 
-    print(f"DEBUG: Full user prompt: {state['user_message']}")
-    print(f"DEBUG: User prompt length: {len(state['user_message'])} characters")
-    print(f"DEBUG: classify_intent() called with message: {state['user_message'][:100]}")
+    safe_print(f"DEBUG: Full user prompt: {state['user_message']}")
+    safe_print(f"DEBUG: User prompt length: {len(state['user_message'])} characters")
+    safe_print(f"DEBUG: classify_intent() called with message: {state['user_message'][:100]}")
 
     user_message = state['user_message']
     has_file = bool(state.get('file_url'))
@@ -59,7 +74,7 @@ Return JSON with this exact structure:
     try:
         # Use Haiku for fast classification
         response = await invoke_claude(classification_prompt, use_haiku=True)
-        print(f"DEBUG: Claude classification response: {response}")
+        safe_print(f"DEBUG: Claude classification response: {response}")
 
         # Parse the JSON response
         classification = parse_json(response)
@@ -70,7 +85,7 @@ Return JSON with this exact structure:
         requires_pdf = classification.get("requires_pdf", False)
         wants_document_output = classification.get("wants_document_output", False)
 
-        print(f"DEBUG: Classified intent={intent}, time_sensitivity={time_sensitivity}, requires_pdf={requires_pdf}, selected_tools={selected_tools}")
+        safe_print(f"DEBUG: Classified intent={intent}, time_sensitivity={time_sensitivity}, requires_pdf={requires_pdf}, selected_tools={selected_tools}")
 
     except Exception as e:
         # Fallback to simple keyword-based classification if Claude fails

@@ -14,8 +14,13 @@ class DocumentParser:
             aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
         )
 
-    async def extract_pdf_text(self, s3_url: str) -> Dict[str, Any]:
-        """Extract text and tables from PDF using AWS Textract"""
+    async def extract_pdf_text(self, s3_url: str, progress_callback=None) -> Dict[str, Any]:
+        """Extract text and tables from PDF using AWS Textract
+
+        Args:
+            s3_url: S3 URL of the PDF
+            progress_callback: Optional async function to call with progress updates
+        """
         import time
         import asyncio
 
@@ -53,24 +58,46 @@ class DocumentParser:
                 FeatureTypes=['TABLES']
             )
             print(f"DEBUG: Textract job started: {response['JobId']}")
+
+            if progress_callback:
+                await progress_callback("Processing document with AWS Textract...")
+
         except Exception as e:
             raise Exception(f"Failed to start Textract job: {e}")
 
         job_id = response['JobId']
 
-        # Wait for job to complete (with timeout)
-        max_wait_time = 300  # 5 minutes
+        # Wait for job to complete (with more aggressive polling)
+        max_wait_time = 600  # 10 minutes for large documents
         start_time = time.time()
+        check_count = 0
+
+        # Start with 2 second checks, increase to 5 seconds after 30 seconds
+        poll_interval = 2
 
         while True:
-            if time.time() - start_time > max_wait_time:
-                raise Exception('Textract job timed out after 5 minutes')
+            elapsed = time.time() - start_time
 
-            await asyncio.sleep(3)  # Check every 3 seconds
+            if elapsed > max_wait_time:
+                raise Exception(f'Textract job timed out after {int(elapsed)}s')
+
+            await asyncio.sleep(poll_interval)
+            check_count += 1
+
+            # Increase poll interval after 30 seconds to reduce API calls
+            if elapsed > 30:
+                poll_interval = 5
 
             response = self.textract.get_document_analysis(JobId=job_id)
             status = response['JobStatus']
-            print(f"DEBUG: Textract job status: {status}")
+
+            # More verbose logging
+            if check_count % 5 == 0 or status in ['SUCCEEDED', 'FAILED']:
+                print(f"DEBUG: Textract status: {status} (elapsed: {int(elapsed)}s, checks: {check_count})")
+
+            # Call progress callback on every check to keep connection alive
+            if progress_callback and check_count % 2 == 0:  # Every 2 checks (4-10 seconds)
+                await progress_callback(f"Processing document... ({int(elapsed)}s elapsed)")
 
             if status in ['SUCCEEDED', 'FAILED']:
                 break
