@@ -50,4 +50,13 @@ CRITICAL INSTRUCTIONS FOR STRUCTURED ANALYSES:
 3. Each section should be substantive (100-300 words minimum, depending on complexity).
 4. Count the number of sections requested and ensure you address every single one.
 5. If you're running long, DO NOT skip sections - provide complete coverage of all topics.
-6. The user expects a comprehensive report covering ALL requested sections without exception."""
+6. The user expects a comprehensive report covering ALL requested sections without exception.
+
+⚠️ ABSOLUTELY CRITICAL - DO NOT SPLIT RESPONSES:
+- NEVER say things like "Continuing with remaining sections in next part due to length..."
+- NEVER say "I'll continue in the next message" or similar
+- NEVER stop mid-analysis with a promise to continue later
+- This is a SINGLE-SHOT response system with NO follow-up capability
+- You have 50,000 tokens available - use them to provide the COMPLETE analysis in ONE response
+- If a section is getting long, be more concise, but COMPLETE ALL SECTIONS
+- It's better to be slightly briefer per section than to skip sections or promise continuations that won't happen"""

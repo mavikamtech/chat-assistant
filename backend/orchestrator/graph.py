@@ -189,32 +189,22 @@ Respond with ONLY "YES" or "NO".
 
     start_time = time.time()
     state["tool_calls"].append({"tool": "finance", "status": "started"})
-    print(f"DEBUG: Running finance calculations for query: {state['user_message'][:100]}")
+    print(f"DEBUG: Finance tool disabled - hardcoded values removed to prevent hallucinations")
 
-    try:
-        # Extract numbers from PDF or user message using Claude
-        # For now, use placeholder values
-        metrics = await finance.calculate_metrics(
-            noi=2_500_000,
-            debt_service=1_800_000
-        )
+    # DISABLED: This function was using hardcoded placeholder values ($2.5M NOI, $1.8M debt service)
+    # which caused hallucinated financial calculations in the output.
+    # TODO: Implement proper financial data extraction from documents or structured database
+    # before re-enabling this functionality.
 
-        state["finance_calcs"] = metrics
+    state["finance_calcs"] = {}
 
-        duration_ms = int((time.time() - start_time) * 1000)
-        state["tool_calls"].append({
-            "tool": "finance",
-            "status": "completed",
-            "duration_ms": duration_ms,
-            "summary": f"Calculated {len(metrics)} metrics"
-        })
-    except Exception as e:
-        state["tool_calls"].append({
-            "tool": "finance",
-            "status": "failed",
-            "summary": str(e)
-        })
-        state["finance_calcs"] = {}
+    duration_ms = int((time.time() - start_time) * 1000)
+    state["tool_calls"].append({
+        "tool": "finance",
+        "status": "skipped",
+        "duration_ms": duration_ms,
+        "summary": "Finance calculations disabled (hardcoded values removed)"
+    })
 
     return state
 

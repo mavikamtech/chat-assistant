@@ -65,7 +65,9 @@ export default function ChatInterface() {
 
     try {
       // Use direct backend URL to avoid Next.js proxy timeout for long requests
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/chat';
+      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/chat`
+        : 'http://localhost:8000/api/chat';
       const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,

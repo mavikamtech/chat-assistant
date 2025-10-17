@@ -16,8 +16,16 @@ COPY . .
 # Create public directory if it doesn't exist
 RUN mkdir -p public
 
-# Build Next.js app (will use .env.production)
+# Set environment variables for build time
+ENV NEXT_PUBLIC_BACKEND_URL=https://ai.mavik-ssot.com/api
+ENV NEXT_PUBLIC_COGNITO_USER_POOL_ID=us-east-2_fuVW3us9r
+ENV NEXT_PUBLIC_COGNITO_CLIENT_ID=5891okbc5015jt5po252mufcbo
+
+# Build Next.js app (environment variables are now available)
 RUN npm run build
+
+# Replace localhost references with production URL in built files
+RUN find .next -type f -name "*.js" -exec sed -i 's|http://localhost:8000/api|https://ai.mavik-ssot.com/api|g' {} +
 
 # Production stage
 FROM node:18-alpine AS runner

@@ -5,7 +5,7 @@
 set -e
 
 # Configuration
-AWS_REGION="us-east-1"
+AWS_REGION="us-east-2"
 AWS_ACCOUNT_ID="167067248318"
 CLUSTER_NAME="mavik-ai-cluster"
 ECR_BACKEND="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/mavik-ai/backend"

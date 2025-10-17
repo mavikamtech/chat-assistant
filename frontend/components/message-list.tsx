@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -76,6 +77,7 @@ export default function MessageList({ messages, downloadUrl }: MessageListProps)
                     </div>
                   ) : (
                     <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
                     components={{
                       // Customize markdown rendering
                       h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,

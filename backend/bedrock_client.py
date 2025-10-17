@@ -25,7 +25,7 @@ class BedrockClient:
 
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 50000,  # Increased for comprehensive extraction (was 32000)
+            "max_tokens": 100000,  # Increased to prevent truncation in long pre-screening reports
             "messages": messages,
             "temperature": 0.7
         }
@@ -53,7 +53,7 @@ class BedrockClient:
 
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 50000,  # Increased for comprehensive extraction (was 32000)
+            "max_tokens": 100000,  # Increased to prevent truncation in long pre-screening reports
             "messages": messages,
             "temperature": 0.7
         }
